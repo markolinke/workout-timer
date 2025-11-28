@@ -374,7 +374,7 @@
       if (workoutStartedAt) {
         const now = Date.now();
         const currentPauseTime = (isPaused && lastPauseStart) ? (now - lastPauseStart) : 0;
-        elapsed = Math.floor((now - workoutStartedAt - pausedTimeTotal - currentPauseTime) / 1000);
+        elapsed = Math.ceil((now - workoutStartedAt - pausedTimeTotal - currentPauseTime) / 1000);
       }
 
       const remaining = Math.max(0, totalWorkoutSeconds - elapsed);
