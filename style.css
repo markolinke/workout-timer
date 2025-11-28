@@ -1,0 +1,199 @@
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #222;
+      color: #fff;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      margin: 10px;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #333;
+      border-radius: 15px;
+    }
+
+    .settings {
+      margin: 20px 0;
+    }
+
+    label {
+      display: inline-block;
+      width: 180px;
+      text-align: right;
+      margin: 8px;
+    }
+
+    input {
+      width: 70px;
+      padding: 8px;
+      font-size: 1.2em;
+      text-align: center;
+    }
+
+    button {
+      padding: 14px 32px;
+      font-size: 1.4em;
+      margin: 12px 8px;
+      cursor: pointer;
+      border: none;
+      border-radius: 10px;
+      min-width: 140px;
+    }
+
+    #mainBtn {
+      background: #4CAF50;
+      color: white;
+      font-weight: bold;
+    }
+
+    #stopBtn {
+      background: #f44336;
+      color: white;
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    #stopBtn.enabled {
+      background: #f44336;
+      opacity: 1;
+      cursor: pointer;
+    }
+
+    #resetBtn {
+      background: #555;
+      color: white;
+    }
+
+    .timer-display {
+      font-size: 5.5em;
+      margin: 30px 0;
+      font-weight: bold;
+    }
+
+    .status {
+      font-size: 1.8em;
+      margin: 20px;
+      min-height: 60px;
+    }
+
+    .progress {
+      font-size: 1.3em;
+      color: #aaa;
+    }
+
+    .beep {
+      display: none;
+    }
+
+    /* FLAMBOYANT SCOREBOARD STYLES */
+    .scoreboard-container {
+      width: 100%;
+      overflow-x: auto;
+      margin: 25px 0;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+      background: linear-gradient(145deg, #0a1f44, #051025);
+      /* Midnight Blue Gradient */
+      padding: 15px;
+      border: 1px solid #1e3a6e;
+    }
+
+    .sb-table {
+      width: 100%;
+      border-collapse: separate;
+      /* Allow spacing */
+      border-spacing: 6px;
+      /* Gap between cells */
+      color: #fff;
+      font-family: 'Verdana', sans-serif;
+    }
+
+    .sb-table th,
+    .sb-table td {
+      border: none;
+      /* Remove default borders */
+      padding: 10px 5px;
+      text-align: center;
+      min-width: 45px;
+      border-radius: 8px;
+      /* Rounded cells */
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    /* Header Column (Planned / Completed) */
+    .sb-header-col {
+      background: transparent;
+      color: #88aadd;
+      font-weight: bold;
+      text-align: right;
+      padding-right: 15px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-size: 0.8em;
+      width: 100px;
+      border: none !important;
+    }
+
+    /* Row Styling */
+    .row-planned td:not(.sb-header-col) {
+      background-color: rgba(255, 255, 255, 0.05);
+      color: #aaa;
+      font-size: 0.9em;
+    }
+
+    .row-completed td:not(.sb-header-col) {
+      background-color: rgba(255, 255, 255, 0.1);
+      font-weight: bold;
+      font-size: 1.2em;
+    }
+
+    /* Active Column Highlight - THE FLAMBOYANT PART */
+    .col-active {
+      background-color: #ccff00 !important;
+      /* Neon Tennis Yellow */
+      color: #000 !important;
+      box-shadow: 0 0 15px rgba(204, 255, 0, 0.6);
+      /* Glow */
+      transform: scale(1.1);
+      z-index: 10;
+      border: 2px solid #fff;
+    }
+
+    /* Future/Past Column Styling */
+    .col-future {
+      opacity: 0.5;
+    }
+
+    .col-past {
+      background-color: #004d25 !important;
+      /* Wimbledon Green */
+      color: #fff !important;
+      border: 1px solid #006633;
+    }
+
+    /* Pulse Animation for Active Cell */
+    @keyframes pulse-glow {
+      0% {
+        box-shadow: 0 0 10px rgba(204, 255, 0, 0.4);
+      }
+
+      50% {
+        box-shadow: 0 0 20px rgba(204, 255, 0, 0.8);
+      }
+
+      100% {
+        box-shadow: 0 0 10px rgba(204, 255, 0, 0.4);
+      }
+    }
+
+    .col-active {
+      animation: pulse-glow 2s infinite;
+    }
