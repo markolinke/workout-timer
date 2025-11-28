@@ -94,9 +94,10 @@
 
     /* FLAMBOYANT SCOREBOARD STYLES */
     .scoreboard-container {
-      width: 100%;
+      display: block;
+      width: fit-content;
       overflow-x: auto;
-      margin: 25px 0;
+      margin: 25px auto;
       border-radius: 12px;
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.1);
       background: linear-gradient(145deg, #0a1f44, #051025);
@@ -106,7 +107,6 @@
     }
 
     .sb-table {
-      width: 100%;
       border-collapse: separate;
       /* Allow spacing */
       border-spacing: 6px;

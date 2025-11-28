@@ -2,68 +2,791 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <title>Rep Interval Timer</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <title>Rep Interval Timer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #222;
+      color: #fff;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      margin: 10px;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #333;
+      border-radius: 15px;
+    }
+
+    .settings {
+      margin: 20px 0;
+    }
+
+    label {
+      display: inline-block;
+      width: 180px;
+      text-align: right;
+      margin: 8px;
+    }
+
+    input {
+      width: 70px;
+      padding: 8px;
+      font-size: 1.2em;
+      text-align: center;
+    }
+
+    button {
+      padding: 14px 32px;
+      font-size: 1.4em;
+      margin: 12px 8px;
+      cursor: pointer;
+      border: none;
+      border-radius: 10px;
+      min-width: 140px;
+    }
+
+    #mainBtn {
+      background: #4CAF50;
+      color: white;
+      font-weight: bold;
+    }
+
+    #stopBtn {
+      background: #f44336;
+      color: white;
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    #stopBtn.enabled {
+      background: #f44336;
+      opacity: 1;
+      cursor: pointer;
+    }
+
+    #resetBtn {
+      background: #555;
+      color: white;
+    }
+
+    .timer-display {
+      font-size: 5.5em;
+      margin: 30px 0;
+      font-weight: bold;
+    }
+
+    .status {
+      font-size: 1.8em;
+      margin: 20px;
+      min-height: 60px;
+    }
+
+    .progress {
+      font-size: 1.3em;
+      color: #aaa;
+    }
+
+    .beep {
+      display: none;
+    }
+
+    /* FLAMBOYANT SCOREBOARD STYLES */
+    .scoreboard-container {
+      display: block;
+      width: fit-content;
+      overflow-x: auto;
+      margin: 25px auto;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+      background: linear-gradient(145deg, #0a1f44, #051025);
+      /* Midnight Blue Gradient */
+      padding: 15px;
+      border: 1px solid #1e3a6e;
+    }
+
+    .sb-table {
+      border-collapse: separate;
+      /* Allow spacing */
+      border-spacing: 6px;
+      /* Gap between cells */
+      color: #fff;
+      font-family: 'Verdana', sans-serif;
+    }
+
+    .sb-table th,
+    .sb-table td {
+      border: none;
+      /* Remove default borders */
+      padding: 10px 5px;
+      text-align: center;
+      min-width: 45px;
+      border-radius: 8px;
+      /* Rounded cells */
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    /* Header Column (Planned / Completed) */
+    .sb-header-col {
+      background: transparent;
+      color: #88aadd;
+      font-weight: bold;
+      text-align: right;
+      padding-right: 15px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-size: 0.8em;
+      width: 100px;
+      border: none !important;
+    }
+
+    /* Row Styling */
+    .row-planned td:not(.sb-header-col) {
+      background-color: rgba(255, 255, 255, 0.05);
+      color: #aaa;
+      font-size: 0.9em;
+    }
+
+    .row-completed td:not(.sb-header-col) {
+      background-color: rgba(255, 255, 255, 0.1);
+      font-weight: bold;
+      font-size: 1.2em;
+    }
+
+    /* Active Column Highlight - THE FLAMBOYANT PART */
+    .col-active {
+      background-color: #ccff00 !important;
+      /* Neon Tennis Yellow */
+      color: #000 !important;
+      box-shadow: 0 0 15px rgba(204, 255, 0, 0.6);
+      /* Glow */
+      transform: scale(1.1);
+      z-index: 10;
+      border: 2px solid #fff;
+    }
+
+    /* Future/Past Column Styling */
+    .col-future {
+      opacity: 0.5;
+    }
+
+    .col-past {
+      background-color: #004d25 !important;
+      /* Wimbledon Green */
+      color: #fff !important;
+      border: 1px solid #006633;
+    }
+
+    /* Pulse Animation for Active Cell */
+    @keyframes pulse-glow {
+      0% {
+        box-shadow: 0 0 10px rgba(204, 255, 0, 0.4);
+      }
+
+      50% {
+        box-shadow: 0 0 20px rgba(204, 255, 0, 0.8);
+      }
+
+      100% {
+        box-shadow: 0 0 10px rgba(204, 255, 0, 0.4);
+      }
+    }
+
+    .col-active {
+      animation: pulse-glow 2s infinite;
+    }
+
+    }
+  </style>
 </head>
 
 <body>
 
-    <div class="container">
+  <div class="container">
 
-        <!-- VISUAL CUE BAR – total -->
-        <div id="totalBarContainer"
-            style="position:fixed; left:15px; top:15%; width:28px; height:70%; background:#111; border:3px solid #555; border-radius:14px; overflow:hidden; z-index:10; box-shadow:0 0 15px rgba(0,0,0,0.8);">
-            <div id="totalBar"
-                style="width:100%; height:100%; background:linear-gradient(to bottom, #4CAF50, #2e7d32); transform:scaleY(1); transform-origin:top; transition:transform 0.08s linear;">
-            </div>
-        </div>
-
-        <!-- VISUAL CUE BAR – Rep -->
-        <div id="calfBarContainer"
-            style="position:fixed; left:58px; top:15%; width:56px; height:70%; background:#111; border:3px solid #555; border-radius:14px; overflow:hidden; z-index:10; box-shadow:0 0 15px rgba(0,0,0,0.8);">
-            <div id="calfBar"
-                style="width:100%; height:100%; background:linear-gradient(to bottom, #4CAF50, #2e7d32); transform:scaleY(1); transform-origin:top; transition:transform 0.08s linear;">
-            </div>
-        </div>
-
-        <h1>Rep Interval Timer</h1>
-
-        <div class="settings">
-            <div><label>Rounds:</label> <input type="number" id="rounds" value="6" min="1"></div>
-            <div><label>Reps per round:</label> <input type="number" id="reps" value="15" min="1"></div>
-            <div><label>Work per rep (sec):</label> <input type="number" id="work" value="6" min="1"></div>
-            <div><label>Rest between reps (sec):</label> <input type="number" id="rest" value="2" min="0"></div>
-            <div><label>Rest between rounds (sec):</label> <input type="number" id="roundRest" value="30" min="0"></div>
-        </div>
-
-        <div style="margin: 20px 0; font-size: 1.4em; color: #aaa;">
-            Total workout: <strong id="totalTimeDisplay">—</strong>
-        </div>
-
-        <div>
-            <button id="mainBtn">START</button>
-            <button id="stopBtn" disabled>STOP</button>
-            <button id="resetBtn">RESET</button>
-        </div>
-
-        <div class="timer-display" id="timer">00:00</div>
-        <div class="status" id="status">Ready – Press START</div>
-        <!-- GRID SCOREBOARD -->
-        <div class="scoreboard-container">
-            <table class="sb-table" id="sbTable">
-                <!-- Generated by JS -->
-            </table>
-        </div>
-
-        <div class="progress" id="progress"></div>
+    <!-- VISUAL CUE BAR – total -->
+    <div id="totalBarContainer"
+      style="position:fixed; left:15px; top:15%; width:28px; height:70%; background:#111; border:3px solid #555; border-radius:14px; overflow:hidden; z-index:10; box-shadow:0 0 15px rgba(0,0,0,0.8);">
+      <div id="totalBar"
+        style="width:100%; height:100%; background:linear-gradient(to bottom, #4CAF50, #2e7d32); transform:scaleY(1); transform-origin:top; transition:transform 0.08s linear;">
+      </div>
     </div>
 
-    <audio id="beep" class="beep"
-        src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=" preload="auto"></audio>
+    <!-- VISUAL CUE BAR – Rep -->
+    <div id="calfBarContainer"
+      style="position:fixed; left:58px; top:15%; width:56px; height:70%; background:#111; border:3px solid #555; border-radius:14px; overflow:hidden; z-index:10; box-shadow:0 0 15px rgba(0,0,0,0.8);">
+      <div id="calfBar"
+        style="width:100%; height:100%; background:linear-gradient(to bottom, #4CAF50, #2e7d32); transform:scaleY(1); transform-origin:top; transition:transform 0.08s linear;">
+      </div>
+    </div>
 
-    <script src="script.js"></script>
+    <h1>Rep Interval Timer</h1>
+
+    <div class="settings">
+      <div><label>Rounds:</label> <input type="number" id="rounds" value="6" min="1"></div>
+      <div><label>Reps per round:</label> <input type="number" id="reps" value="15" min="1"></div>
+      <div><label>Work per rep (sec):</label> <input type="number" id="work" value="6" min="1"></div>
+      <div><label>Rest between reps (sec):</label> <input type="number" id="rest" value="2" min="0"></div>
+      <div><label>Rest between rounds (sec):</label> <input type="number" id="roundRest" value="30" min="0"></div>
+    </div>
+
+    <div style="margin: 20px 0; font-size: 1.4em; color: #aaa;">
+      Total workout: <strong id="totalTimeDisplay">—</strong>
+    </div>
+
+    <div>
+      <button id="mainBtn">START</button>
+      <button id="stopBtn" disabled>STOP</button>
+      <button id="resetBtn">RESET</button>
+    </div>
+
+    <div class="timer-display" id="timer">00:00</div>
+    <div class="status" id="status">Ready – Press START</div>
+    <!-- GRID SCOREBOARD -->
+    <div class="scoreboard-container">
+      <table class="sb-table" id="sbTable">
+        <!-- Generated by JS -->
+      </table>
+    </div>
+
+    <div class="progress" id="progress"></div>
+  </div>
+
+  <audio id="beep" class="beep" src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA="
+    preload="auto"></audio>
+
+  <script>
+    const beep = document.getElementById('beep');
+    const timerDisplay = document.getElementById('timer');
+    const statusDisplay = document.getElementById('status');
+    const progressDisplay = document.getElementById('progress');
+    const mainBtn = document.getElementById('mainBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const tickTime = 100;
+
+    let countdown;
+    let totalSeconds = 0;
+    let totalWorkoutSeconds = 0;
+    let currentRound = 1;
+    let currentRep = 1;
+    let isWorking = true;
+    let isRoundRest = false;
+    let isRunning = false;
+    let isPaused = false;
+    let workoutStartedAt = null;        // timestamp when START was pressed
+    let pausedTimeTotal = 0;           // total seconds spent paused
+    let lastPauseStart = null;        // when current pause began
+    let getReadyActive = false;
+
+    // Simple calf drop visual bar
+    const calfBar = document.getElementById('calfBar');
+
+    function updateVisualBars() {
+      if (getReadyActive || !isRunning) {
+        calfBar.style.display = 'none';
+        return;
+      }
+      calfBar.style.display = 'block';
+
+      if (isWorking) {
+        // WORK = lowering = fill from TOP to BOTTOM
+        const progress = (parseInt(document.getElementById('work').value) - totalSeconds) / parseInt(document.getElementById('work').value);
+        calfBar.style.transform = `scaleY(${progress})`;
+        calfBar.style.transformOrigin = 'top';
+        calfBar.style.background = 'linear-gradient(to bottom, #4CAF50, #2e7d32)';  // green
+      } else if (!isRoundRest) {
+        // SHORT REST = rising = fill from BOTTOM to TOP
+        const restTime = parseInt(document.getElementById('rest').value);
+        const progress = (restTime - totalSeconds) / restTime;
+        calfBar.style.transform = `scaleY(${progress})`;
+        calfBar.style.transformOrigin = 'bottom';
+        calfBar.style.background = 'linear-gradient(to top, #ff9800, #e65100)';     // orange
+      } else {
+        // During long round rest → hide or keep orange (your choice)
+        calfBar.style.display = 'none';
+      }
+    }
+
+    function playBeep(times = 1, delay = 200) {
+      if (times > 0) {
+        beep.currentTime = 0;
+        beep.play();
+        setTimeout(() => playBeep(times - 1, delay), delay);
+      }
+    }
+
+    function formatTime(sec) {
+      sec = Math.floor(sec);
+      const mins = Math.floor(sec / 60).toString().padStart(2, '0');
+      const secs = (sec % 60).toString().padStart(2, '0');
+      return `${mins}:${secs}`;
+    }
+
+    function updateDisplay() {
+      timerDisplay.textContent = formatTime(totalSeconds);
+    }
+
+    function updateProgress() {
+      const rounds = parseInt(document.getElementById('rounds').value);
+      const repsPerRound = parseInt(document.getElementById('reps').value);
+      const workSec = parseInt(document.getElementById('work').value);
+      const restSec = parseInt(document.getElementById('rest').value);
+      const roundRestSec = parseInt(document.getElementById('roundRest').value);
+
+      const totalReps = rounds * repsPerRound;
+
+      // Completed reps (same logic as before — this part was actually fine)
+      let completedReps = (currentRound - 1) * repsPerRound;
+      if (isRoundRest) {
+        completedReps += repsPerRound;
+      } else {
+        completedReps += isWorking ? (currentRep - 1) : currentRep;
+      }
+
+      // ───── TOTAL WORKOUT DURATION (calculated once, perfectly) ─────
+      const timePerRound = repsPerRound * workSec + (repsPerRound - 1) * restSec + roundRestSec;
+      const totalWorkoutSeconds = (rounds - 1) * timePerRound + (repsPerRound * workSec + (repsPerRound - 1) * restSec);
+
+      // ───── ELAPSED TIME (real time minus pauses) ─────
+      let elapsed = 0;
+      if (workoutStartedAt) {
+        const now = Date.now();
+        const currentPauseTime = (isPaused && lastPauseStart) ? (now - lastPauseStart) : 0;
+        elapsed = Math.floor((now - workoutStartedAt - pausedTimeTotal - currentPauseTime) / 1000);
+      }
+
+      const remaining = Math.max(0, totalWorkoutSeconds - elapsed);
+
+      const mins = Math.floor(remaining / 60);
+      const secs = (remaining % 60).toString().padStart(2, '0');
+      const timeLeft = remaining >= 60 ? `${mins}m ${secs}s left` : `${remaining}s left`;
+      const workoutProgressPct = Math.floor((elapsed / totalWorkoutSeconds) * 100);
+
+      // Update Scoreboard Grid
+      updateScoreboardGrid();
+
+      progressDisplay.innerHTML = `
+    Total Reps: <strong>${completedReps}</strong>/${totalReps} &nbsp;•&nbsp; 
+    Time Left: <span style="color:#4CAF50;">${timeLeft}</span>
+  `;
+
+      // Update the total bar the same way as the rep bar
+      const totalBar = document.getElementById('totalBar');
+      totalBar.style.transform = `scaleY(${workoutProgressPct / 100})`;
+      totalBar.style.transformOrigin = 'top';
+      totalBar.style.background = 'linear-gradient(to bottom, #4CAF50, #2e7d32)';
+
+    }
+
+    function tick() {
+      totalSeconds -= tickTime / 1000;
+      updateDisplay();      // big 00:00 timer
+      updateProgress();     // ← THIS LINE IS THE KEY (updates total remaining time every second)
+      updateVisualBars();
+
+      // BACKGROUND COLOR LOGIC
+      if (totalSeconds <= 3 && totalSeconds > 0) {
+        document.body.style.background = '#b71c1c';        // red flash last 3 seconds
+      }
+      else if (isWorking) {
+        document.body.style.background = '#222';           // WORK = black
+      }
+      else {
+        document.body.style.background =
+          isWorking ? '#222' :
+            isRoundRest ? '#e65100' : '#ff9800';   // dark orange for round rest, bright for rep rest
+
+        document.body.style.color = isWorking ? '#fff' : '#000';
+      }
+
+      if (totalSeconds <= 0) {
+        playBeep(3, 150);
+        nextPhase();
+      }
+    }
+
+    function nextPhase() {
+      const workSec = parseInt(document.getElementById('work').value);
+      const restSec = parseInt(document.getElementById('rest').value);
+      const roundRestSec = parseInt(document.getElementById('roundRest').value);
+      const totalRounds = parseInt(document.getElementById('rounds').value);
+      const repsPerRound = parseInt(document.getElementById('reps').value);
+
+      if (isRoundRest) {
+        // End of round rest → next round
+        isRoundRest = false;
+        currentRound++;
+        currentRep = 1;
+        if (currentRound > totalRounds) {
+          finishWorkout();
+          return;
+        }
+        statusDisplay.textContent = `ROUND ${currentRound} – WORK`;
+        statusDisplay.style.color = '#4CAF50';
+        isWorking = true;
+        totalSeconds = workSec;
+      } else if (isWorking) {
+        // End of work
+        isWorking = false;
+        currentRep++;
+        if (currentRep > repsPerRound) {
+          if (currentRound === totalRounds) {
+            finishWorkout();
+            return;
+          }
+          isRoundRest = true;
+          totalSeconds = roundRestSec;
+          statusDisplay.textContent = `REST BETWEEN ROUNDS (${roundRestSec}s)`;
+          statusDisplay.style.color = '#ff9800';
+        } else {
+          totalSeconds = restSec;
+          statusDisplay.textContent = `REST (${restSec}s)`;
+          statusDisplay.style.color = '#ff9800';
+        }
+      } else {
+        // End of rest → next rep
+        isWorking = true;
+        totalSeconds = workSec;
+        statusDisplay.textContent = `ROUND ${currentRound} – REP ${currentRep} WORK`;
+        statusDisplay.style.color = '#4CAF50';
+      }
+
+      updateProgress();
+      updateDisplay();
+      updateVisualBars();
+
+      // Force correct background immediately when phase changes
+      document.body.style.background =
+        isWorking ? '#222' :
+          isRoundRest ? '#e65100' : '#ff9800';   // dark orange for round rest, bright for rep rest
+
+      document.body.style.color = isWorking ? '#fff' : '#000';
+    }
+
+    function startTimer() {
+      if (!workoutStartedAt) {
+        workoutStartedAt = Date.now();   // ← first time we press START
+        // calc totalworkoutseconts based on this formula
+        // const timePerRound = repsPerRound * workSec + (repsPerRound - 1) * restSec + roundRestSec;
+        // const totalWorkoutSeconds = (rounds - 1) * timePerRound + (repsPerRound * workSec + (repsPerRound - 1) * restSec);
+        totalWorkoutSeconds = (rounds - 1) * timePerRound + (repsPerRound * workSec + (repsPerRound - 1) * restSec);
+      }
+
+      if (isRunning && !isPaused) return;
+
+      isRunning = true;
+      isPaused = false;
+      mainBtn.textContent = "PAUSE";
+      stopBtn.disabled = true;
+      stopBtn.classList.remove('enabled');
+
+      const workSec = parseInt(document.getElementById('work').value);
+      if (totalSeconds === 0) {
+        totalSeconds = isRoundRest ? parseInt(document.getElementById('roundRest').value) :
+          (isWorking ? workSec : parseInt(document.getElementById('rest').value));
+        if (totalSeconds === 0) totalSeconds = workSec;
+        statusDisplay.textContent = `ROUND 1 – WORK`;
+        statusDisplay.style.color = '#4CAF50';
+        updateProgress();
+      }
+
+      updateDisplay();
+      countdown = setInterval(tick, tickTime);
+    }
+
+    function pauseTimer() {
+      clearInterval(countdown);
+      isPaused = true;
+      mainBtn.textContent = "RESUME";
+      stopBtn.disabled = false;
+      stopBtn.classList.add('enabled');
+      statusDisplay.textContent += " (PAUSED)";
+      lastPauseStart = Date.now();
+    }
+
+    function resumeTimer() {
+      if (lastPauseStart) {
+        pausedTimeTotal += Date.now() - lastPauseStart;
+        lastPauseStart = null;
+      }
+
+      isPaused = false;
+      mainBtn.textContent = "PAUSE";
+      stopBtn.disabled = true;
+      stopBtn.classList.remove('enabled');
+      statusDisplay.textContent = statusDisplay.textContent.replace(" (PAUSED)", "");
+      countdown = setInterval(tick, tickTime);
+    }
+
+    function stopTimer() {
+      resetTimer();
+      clearInterval(countdown);
+      resetTimer();
+    }
+
+    function resetTimer() {
+      clearInterval(countdown);
+      totalSeconds = 0;
+      currentRound = 1;
+      currentRep = 1;
+      isWorking = true;
+      isRoundRest = false;
+      isRunning = false;
+      isPaused = false;
+
+      mainBtn.textContent = "START";
+      stopBtn.disabled = true;
+      stopBtn.classList.remove('enabled');
+
+      updateDisplay();
+      statusDisplay.textContent = "Ready – Press START";
+      statusDisplay.style.color = '#fff';
+      progressDisplay.textContent = '';
+      document.body.style.background = '#222';
+
+      workoutStartedAt = null;
+      pausedTimeTotal = 0;
+      lastPauseStart = null;
+      calfBar.style.display = 'none';
+      initScoreboard(); // Re-initialize scoreboard on reset
+    }
+
+    function finishWorkout() {
+      clearInterval(countdown);
+      isRunning = false;
+      isPaused = false;
+      timerDisplay.textContent = "DONE!";
+      statusDisplay.textContent = "WORKOUT COMPLETE!";
+      statusDisplay.style.color = '#4CAF50';
+      progressDisplay.textContent = '';
+      mainBtn.textContent = "START";
+      stopBtn.disabled = true;
+      playBeep(8, 250);
+      document.body.style.background = '#1b5e20';
+    }
+
+    // Main button logic
+    mainBtn.onclick = () => {
+      if (!isRunning) {
+        startTimer();
+      } else if (isPaused) {
+        resumeTimer();
+      } else {
+        pauseTimer();
+      }
+    };
+
+    stopBtn.onclick = stopTimer;
+    document.getElementById('resetBtn').onclick = resetTimer;
+
+    // Press Enter to start/resume
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && (mainBtn.textContent === 'START' || mainBtn.textContent === 'RESUME')) {
+        mainBtn.click();
+      }
+    });
+
+    // Spacebar or Enter to control Start / Pause / Resume
+    document.addEventListener('keydown', (e) => {
+      // Spacebar or Enter → toggle Start / Pause / Resume
+      if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault(); // prevents page scroll when pressing space
+
+        // If we're on the "START" or "RESUME" button → click it
+        if (mainBtn.textContent === 'START' || mainBtn.textContent === 'RESUME') {
+          mainBtn.click();
+        }
+        // If we're running and not already paused → pause
+        else if (mainBtn.textContent === 'PAUSE' && isRunning && !isPaused) {
+          mainBtn.click(); // triggers pause
+        }
+      }
+    });
+
+    // ──────────────────────────────
+    // Prevent screen sleep / dimming / lock while timer is running
+    // Works on Chrome, Edge, Safari (iOS/macOS), Firefox (with permissions)
+    // ──────────────────────────────
+    let wakeLock = null;
+
+    async function requestWakeLock() {
+      if ('wakeLock' in navigator) {
+        try {
+          wakeLock = await navigator.wakeLock.request('screen');
+          console.log('Screen wake lock active – screen will stay on');
+
+          // Re-request if the system tries to turn it off (some browsers release it on visibility change)
+          wakeLock.addEventListener('release', () => {
+            console.log('Wake lock released');
+          });
+        } catch (err) {
+          console.warn('Wake lock failed:', err);
+        }
+      }
+    }
+
+    function releaseWakeLock() {
+      if (wakeLock) {
+        wakeLock.release();
+        wakeLock = null;
+      }
+    }
+
+    // Hook it into your existing timer states
+    const originalStartTimer = startTimer;
+    startTimer = function () {
+      originalStartTimer();
+      requestWakeLock();           // ← keep screen on when workout starts
+    };
+
+    const originalPauseTimer = pauseTimer;
+    pauseTimer = function () {
+      originalPauseTimer();
+      // Optional: you can release wake lock on pause if you want the screen to dim when paused
+      // releaseWakeLock();
+    };
+
+    const originalStopTimer = stopTimer;
+    stopTimer = function () {
+      originalStopTimer();
+      releaseWakeLock();           // ← allow screen to sleep again
+    };
+
+    const originalResetTimer = resetTimer;
+    resetTimer = function () {
+      originalResetTimer();
+      releaseWakeLock();           // ← make sure it's released on reset too
+    };
+
+    function finishWorkout() {
+      // ... your existing finishWorkout code ...
+      releaseWakeLock();           // ← definitely release when workout ends
+      // (keep the rest of your original finishWorkout function unchanged)
+    }
+
+    // Auto-update total workout time whenever ANY setting changes
+    document.querySelectorAll('input').forEach(input => {
+      input.addEventListener('input', updateTotalWorkoutTime);
+    });
+
+    // Also update when page first loads
+    updateTotalWorkoutTime();
+
+    function updateTotalWorkoutTime() {
+      const rounds = parseInt(document.getElementById('rounds').value) || 0;
+      const repsPerRound = parseInt(document.getElementById('reps').value) || 0;
+      const workSec = parseInt(document.getElementById('work').value) || 0;
+      const restSec = parseInt(document.getElementById('rest').value) || 0;
+      const roundRestSec = parseInt(document.getElementById('roundRest').value) || 0;
+
+      if (rounds === 0 || repsPerRound === 0) {
+        document.getElementById('totalTimeDisplay').textContent = '—';
+        return;
+      }
+
+      const timePerFullRound = repsPerRound * workSec + (repsPerRound - 1) * restSec + roundRestSec;
+      const lastRoundTime = repsPerRound * workSec + (repsPerRound - 1) * restSec;
+      const totalSeconds = (rounds - 1) * timePerFullRound + lastRoundTime;
+
+      const mins = Math.floor(totalSeconds / 60);
+      const secs = (totalSeconds % 60).toString().padStart(2, '0');
+      document.getElementById('totalTimeDisplay').textContent =
+        totalSeconds >= 3600 ? `${Math.floor(totalSeconds / 3600)}h ${mins}m ${secs}s` :
+          mins > 0 ? `${mins}m ${secs}s` : `${totalSeconds}s`;
+    }
+
+    // Call it on page load and whenever any input changes
+    window.addEventListener('load', updateTotalWorkoutTime);
+    document.querySelectorAll('#rounds, #reps, #work, #rest, #roundRest').forEach(input => {
+      input.addEventListener('input', updateTotalWorkoutTime);
+    });
+
+    // ──────────────────────────────
+    // DYNAMIC SCOREBOARD LOGIC
+    // ──────────────────────────────
+    function initScoreboard() {
+      const rounds = parseInt(document.getElementById('rounds').value) || 6;
+      const reps = parseInt(document.getElementById('reps').value) || 15;
+      const table = document.getElementById('sbTable');
+
+      let html = '';
+
+      // Row 1: Planned
+      html += '<tr class="row-planned">';
+      html += '<td class="sb-header-col">Planned</td>';
+      for (let i = 1; i <= rounds; i++) {
+        html += `<td id="sb-plan-${i}">${reps}</td>`;
+      }
+      html += '</tr>';
+
+      // Row 2: Completed
+      html += '<tr class="row-completed">';
+      html += '<td class="sb-header-col">Completed</td>';
+      for (let i = 1; i <= rounds; i++) {
+        html += `<td id="sb-comp-${i}">0</td>`;
+      }
+      html += '</tr>';
+
+      table.innerHTML = html;
+      updateScoreboardGrid();
+    }
+
+    function updateScoreboardGrid() {
+      const rounds = parseInt(document.getElementById('rounds').value) || 6;
+      const repsPerRound = parseInt(document.getElementById('reps').value) || 15;
+
+      for (let i = 1; i <= rounds; i++) {
+        const cellPlan = document.getElementById(`sb-plan-${i}`);
+        const cellComp = document.getElementById(`sb-comp-${i}`);
+        if (!cellPlan || !cellComp) continue;
+
+        // Reset classes
+        cellPlan.className = '';
+        cellComp.className = '';
+
+        if (i < currentRound) {
+          // Past rounds
+          cellComp.textContent = repsPerRound;
+          cellPlan.classList.add('col-past');
+          cellComp.classList.add('col-past');
+        } else if (i === currentRound) {
+          // Current round
+          // If we are in round rest (finished the round), show full reps, otherwise show current rep-1 (completed)
+          let completedInRound = isRoundRest ? repsPerRound : (currentRep - 1);
+          // If we are working on rep 1, completed is 0.
+
+          cellComp.textContent = completedInRound;
+          cellPlan.classList.add('col-active');
+          cellComp.classList.add('col-active');
+        } else {
+          // Future rounds
+          cellComp.textContent = '0';
+          cellPlan.classList.add('col-future');
+          cellComp.classList.add('col-future');
+        }
+      }
+    }
+
+    // Re-init scoreboard when settings change
+    document.querySelectorAll('#rounds, #reps').forEach(input => {
+      input.addEventListener('change', initScoreboard);
+    });
+
+    // Init on load
+    window.addEventListener('load', initScoreboard);
+
+
+  </script>
 </body>
 
 </html>
