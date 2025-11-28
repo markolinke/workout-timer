@@ -557,9 +557,12 @@
     }
 
     function finishWorkout() {
+      console.log('finishWorkout');
       clearInterval(countdown);
       isRunning = false;
       isPaused = false;
+      releaseWakeLock();           // ← definitely release when workout ends
+
       timerDisplay.textContent = "DONE!";
       progressDisplay.textContent = '';
       mainBtn.textContent = "START";
@@ -660,12 +663,6 @@
       originalResetTimer();
       releaseWakeLock();           // ← make sure it's released on reset too
     };
-
-    function finishWorkout() {
-      // ... your existing finishWorkout code ...
-      releaseWakeLock();           // ← definitely release when workout ends
-      // (keep the rest of your original finishWorkout function unchanged)
-    }
 
     // Auto-update total workout time whenever ANY setting changes
     document.querySelectorAll('input').forEach(input => {
