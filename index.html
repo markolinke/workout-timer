@@ -233,11 +233,11 @@
     <h1>Rep Interval Timer</h1>
 
     <div class="settings">
-      <div><label>Rounds:</label> <input type="number" id="rounds" value="6" min="1"></div>
-      <div><label>Reps per round:</label> <input type="number" id="reps" value="15" min="1"></div>
-      <div><label>Work per rep (sec):</label> <input type="number" id="work" value="6" min="1"></div>
-      <div><label>Rest between reps (sec):</label> <input type="number" id="rest" value="2" min="0"></div>
-      <div><label>Rest between rounds (sec):</label> <input type="number" id="roundRest" value="30" min="0"></div>
+      <div><label>Rounds:</label> <input type="number" id="rounds" min="1"></div>
+      <div><label>Reps per round:</label> <input type="number" id="reps" min="1"></div>
+      <div><label>Work per rep (sec):</label> <input type="number" id="work" min="1"></div>
+      <div><label>Rest between reps (sec):</label> <input type="number" id="rest" min="0"></div>
+      <div><label>Rest between rounds (sec):</label> <input type="number" id="roundRest" min="0"></div>
     </div>
 
     <div style="margin: 20px 0; font-size: 1.4em; color: #aaa;">
@@ -266,6 +266,15 @@
     preload="auto"></audio>
 
   <script>
+    // Default configuration values
+    const DEFAULT_CONFIG = {
+      rounds: 6,
+      reps: 15,
+      work: 5,
+      rest: 1,
+      roundRest: 30
+    };
+
     const beep = document.getElementById('beep');
     const timerDisplay = document.getElementById('timer');
     const statusDisplay = document.getElementById('status');
@@ -782,8 +791,20 @@
       input.addEventListener('change', initScoreboard);
     });
 
+    // Initialize input values from DEFAULT_CONFIG
+    function initInputValues() {
+      document.getElementById('rounds').value = DEFAULT_CONFIG.rounds;
+      document.getElementById('reps').value = DEFAULT_CONFIG.reps;
+      document.getElementById('work').value = DEFAULT_CONFIG.work;
+      document.getElementById('rest').value = DEFAULT_CONFIG.rest;
+      document.getElementById('roundRest').value = DEFAULT_CONFIG.roundRest;
+    }
+
     // Init on load
-    window.addEventListener('load', initScoreboard);
+    window.addEventListener('load', () => {
+      initInputValues();
+      initScoreboard();
+    });
 
 
   </script>
