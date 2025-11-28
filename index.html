@@ -85,12 +85,6 @@
       font-weight: bold;
     }
 
-    .status {
-      font-size: 1.8em;
-      margin: 20px;
-      min-height: 60px;
-    }
-
     .progress {
       font-size: 1.3em;
       color: #aaa;
@@ -243,7 +237,6 @@
     </div>
 
     <div class="timer-display" id="timer">00:00</div>
-    <div class="status" id="status">Ready – Press START</div>
     <!-- GRID SCOREBOARD -->
     <div class="scoreboard-container">
       <table class="sb-table" id="sbTable">
@@ -280,7 +273,6 @@
 
     const beep = document.getElementById('beep');
     const timerDisplay = document.getElementById('timer');
-    const statusDisplay = document.getElementById('status');
     const progressDisplay = document.getElementById('progress');
     const mainBtn = document.getElementById('mainBtn');
     const stopBtn = document.getElementById('stopBtn');
@@ -443,8 +435,6 @@
           finishWorkout();
           return;
         }
-        statusDisplay.textContent = `ROUND ${currentRound} – WORK`;
-        statusDisplay.style.color = '#4CAF50';
         isWorking = true;
         totalSeconds = workSec;
       } else if (isWorking) {
@@ -458,19 +448,13 @@
           }
           isRoundRest = true;
           totalSeconds = roundRestSec;
-          statusDisplay.textContent = `REST BETWEEN ROUNDS (${roundRestSec}s)`;
-          statusDisplay.style.color = '#ff9800';
         } else {
           totalSeconds = restSec;
-          statusDisplay.textContent = `REST (${restSec}s)`;
-          statusDisplay.style.color = '#ff9800';
         }
       } else {
         // End of rest → next rep
         isWorking = true;
         totalSeconds = workSec;
-        statusDisplay.textContent = `ROUND ${currentRound} – REP ${currentRep} WORK`;
-        statusDisplay.style.color = '#4CAF50';
       }
 
       updateProgress();
@@ -512,8 +496,6 @@
         totalSeconds = isRoundRest ? parseInt(document.getElementById('roundRest').value) :
           (isWorking ? workSec : parseInt(document.getElementById('rest').value));
         if (totalSeconds === 0) totalSeconds = workSec;
-        statusDisplay.textContent = `ROUND 1 – WORK`;
-        statusDisplay.style.color = '#4CAF50';
         updateProgress();
       }
 
@@ -527,7 +509,6 @@
       mainBtn.textContent = "RESUME";
       stopBtn.disabled = false;
       stopBtn.classList.add('enabled');
-      statusDisplay.textContent += " (PAUSED)";
       lastPauseStart = Date.now();
     }
 
@@ -541,7 +522,6 @@
       mainBtn.textContent = "PAUSE";
       stopBtn.disabled = true;
       stopBtn.classList.remove('enabled');
-      statusDisplay.textContent = statusDisplay.textContent.replace(" (PAUSED)", "");
       countdown = setInterval(tick, tickTime);
     }
 
@@ -566,8 +546,6 @@
       stopBtn.classList.remove('enabled');
 
       updateDisplay();
-      statusDisplay.textContent = "Ready – Press START";
-      statusDisplay.style.color = '#fff';
       progressDisplay.textContent = '';
       document.body.style.background = '#222';
 
@@ -583,8 +561,6 @@
       isRunning = false;
       isPaused = false;
       timerDisplay.textContent = "DONE!";
-      statusDisplay.textContent = "WORKOUT COMPLETE!";
-      statusDisplay.style.color = '#4CAF50';
       progressDisplay.textContent = '';
       mainBtn.textContent = "START";
       stopBtn.disabled = true;
