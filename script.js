@@ -186,18 +186,26 @@ function nextPhase() {
     totalSeconds = workSec;
   } else if (isWorking) {
     // End of work
+    console.log(`Work ended: Round ${currentRound}/${totalRounds}, Rep ${currentRep}/${repsPerRound}`);
     isWorking = false;
     currentRep++;
+    console.log(`After increment: currentRep=${currentRep}, repsPerRound=${repsPerRound}, currentRound=${currentRound}, totalRounds=${totalRounds}`);
+
+    // Check if we just completed the last rep of the last round
+    if (currentRep > repsPerRound && currentRound === totalRounds) {
+      console.log('FINISHING WORKOUT - last rep of last round completed');
+      finishWorkout();
+      return;
+    }
+
     if (currentRep > repsPerRound) {
-      if (currentRound === totalRounds) {
-        finishWorkout();
-        return;
-      }
+      // Moving to next round
       isRoundRest = true;
       totalSeconds = roundRestSec;
       statusDisplay.textContent = `REST BETWEEN ROUNDS (${roundRestSec}s)`;
       statusDisplay.style.color = '#ff9800';
     } else {
+      // Rest between reps in the same round
       totalSeconds = restSec;
       statusDisplay.textContent = `REST (${restSec}s)`;
       statusDisplay.style.color = '#ff9800';

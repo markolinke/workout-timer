@@ -488,9 +488,14 @@
     function startTimer() {
       if (!workoutStartedAt) {
         workoutStartedAt = Date.now();   // ← first time we press START
-        // calc totalworkoutseconts based on this formula
-        // const timePerRound = repsPerRound * workSec + (repsPerRound - 1) * restSec + roundRestSec;
-        // const totalWorkoutSeconds = (rounds - 1) * timePerRound + (repsPerRound * workSec + (repsPerRound - 1) * restSec);
+        // Get values from inputs
+        const rounds = parseInt(document.getElementById('rounds').value);
+        const repsPerRound = parseInt(document.getElementById('reps').value);
+        const workSec = parseInt(document.getElementById('work').value);
+        const restSec = parseInt(document.getElementById('rest').value);
+        const roundRestSec = parseInt(document.getElementById('roundRest').value);
+        // Calculate total workout duration
+        const timePerRound = repsPerRound * workSec + (repsPerRound - 1) * restSec + roundRestSec;
         totalWorkoutSeconds = (rounds - 1) * timePerRound + (repsPerRound * workSec + (repsPerRound - 1) * restSec);
       }
 
