@@ -142,18 +142,20 @@ function tick() {
 
   if (typeof document !== 'undefined' && document.body) {
     // BACKGROUND COLOR LOGIC
-    if (totalSeconds <= 3 && totalSeconds > 0) {
-      document.body.style.background = '#b71c1c';        // red flash last 3 seconds
-    }
-    else if (isWorking) {
-      document.body.style.background = '#222';           // WORK = black
-    }
-    else {
-      document.body.style.background =
-        isWorking ? '#222' :
-          isRoundRest ? '#e65100' : '#ff9800';   // dark orange for round rest, bright for rep rest
+    document.body.style.background =
+      isWorking ? '#222' :
+        isRoundRest ? '#e65100' : '#ff9800';   // dark orange for round rest, bright for rep rest
 
-      document.body.style.color = isWorking ? '#fff' : '#000';
+    const baseColor = isWorking ? '#fff' : '#000';
+    document.body.style.color = baseColor;
+
+    // TIMER TEXT COLOR LOGIC
+    if (timerDisplay) {
+      if (totalSeconds <= 3 && totalSeconds > 0) {
+        timerDisplay.style.color = '#ff0000'; // Red flash last 3 seconds
+      } else {
+        timerDisplay.style.color = ''; // Inherit from body
+      }
     }
   }
 
@@ -228,6 +230,7 @@ function nextPhase() {
       isRoundRest ? '#e65100' : '#ff9800';   // dark orange for round rest, bright for rep rest
 
   document.body.style.color = isWorking ? '#fff' : '#000';
+  if (timerDisplay) timerDisplay.style.color = '';
 }
 
 function startTimer() {
@@ -327,7 +330,11 @@ function resetTimer() {
     statusDisplay.style.color = '#fff';
   }
   if (progressDisplay) progressDisplay.textContent = '';
-  if (document.body) document.body.style.background = '#222';
+  if (document.body) {
+    document.body.style.background = '#222';
+    document.body.style.color = '#fff';
+  }
+  if (timerDisplay) timerDisplay.style.color = '';
 
   workoutStartedAt = null;
   pausedTimeTotal = 0;
