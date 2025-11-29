@@ -430,18 +430,23 @@
       updateVisualBars();
 
       // BACKGROUND COLOR LOGIC
-      if (totalSeconds <= 3 && totalSeconds > 0) {
-        document.body.style.background = '#b71c1c';        // red flash last 3 seconds
-      }
-      else if (isWorking) {
-        document.body.style.background = '#222';           // WORK = black
-      }
-      else {
-        document.body.style.background =
-          isWorking ? '#222' :
-            isRoundRest ? '#e65100' : '#ff9800';   // dark orange for round rest, bright for rep rest
+      // BACKGROUND COLOR LOGIC
+      document.body.style.background =
+        isWorking ? '#222' :
+          isRoundRest ? '#e65100' : '#ff9800';   // dark orange for round rest, bright for rep rest
 
-        document.body.style.color = isWorking ? '#fff' : '#000';
+      const baseColor = isWorking ? '#fff' : '#000';
+      document.body.style.color = baseColor;
+
+      // TIMER TEXT COLOR LOGIC
+      if (totalSeconds <= 3 && totalSeconds > 0) {
+        if (!isWorking && !isRoundRest) {
+          timerDisplay.style.color = '#4CAF50'; // Green for rest between reps
+        } else {
+          timerDisplay.style.color = '#ff0000'; // Red for work and round rest
+        }
+      } else {
+        timerDisplay.style.color = ''; // Inherit from body
       }
 
       if (totalSeconds <= 0) {
@@ -498,6 +503,7 @@
           isRoundRest ? '#e65100' : '#ff9800';   // dark orange for round rest, bright for rep rest
 
       document.body.style.color = isWorking ? '#fff' : '#000';
+      timerDisplay.style.color = '';
     }
 
     function startTimer() {
@@ -581,6 +587,8 @@
       updateDisplay();
       progressDisplay.textContent = '';
       document.body.style.background = '#222';
+      document.body.style.color = '#fff';
+      timerDisplay.style.color = '';
 
       workoutStartedAt = null;
       pausedTimeTotal = 0;
