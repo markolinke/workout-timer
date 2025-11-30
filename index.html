@@ -517,11 +517,9 @@
         completedReps += isWorking ? (currentRep - 1) : currentRep;
       }
 
-      // ───── TOTAL WORKOUT DURATION (calculated once, perfectly) ─────
-      const timePerRound = repsPerRound * workSec + (repsPerRound - 1) * restSec + roundRestSec;
-      const totalWorkoutSeconds = (rounds - 1) * timePerRound + (repsPerRound * workSec + (repsPerRound - 1) * restSec);
-
       // ───── ELAPSED TIME (real time minus pauses) ─────
+      // Note: totalWorkoutSeconds is calculated once at workout start (line 649)
+      // and stored as a global variable. We use that value here.
       let elapsed = 0;
       if (workoutStartedAt) {
         const now = Date.now();
@@ -645,8 +643,8 @@
         const restSec = parseInt(document.getElementById('rest').value);
         const roundRestSec = parseInt(document.getElementById('roundRest').value);
         // Calculate total workout duration
-        const timePerRound = repsPerRound * workSec + (repsPerRound - 1) * restSec + roundRestSec;
-        totalWorkoutSeconds = (rounds - 1) * timePerRound + (repsPerRound * workSec + (repsPerRound - 1) * restSec);
+        const timePerRound = repsPerRound * workSec + (repsPerRound - 1) * restSec;
+        totalWorkoutSeconds = rounds * timePerRound + (rounds - 1) * roundRestSec;
 
         toggleView(true); // Switch to running view
       }
