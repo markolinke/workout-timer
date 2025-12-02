@@ -388,7 +388,9 @@
     </div>
   </div>
 
+  <script src="script.js"></script>
   <script>
+    // Functions are now global from script.js
     // Predefined workouts
     const PREDEFINED_WORKOUTS = [
       {
@@ -489,13 +491,6 @@
       }
     }
 
-    function formatTime(sec) {
-      sec = Math.ceil(sec);
-      const mins = Math.floor(sec / 60).toString().padStart(2, '0');
-      const secs = (sec % 60).toString().padStart(2, '0');
-      return `${mins}:${secs}`;
-    }
-
     function updateDisplay() {
       timerDisplay.textContent = formatTime(totalSeconds);
     }
@@ -517,22 +512,26 @@
         completedReps += isWorking ? (currentRep - 1) : currentRep;
       }
 
-      // ───── ELAPSED TIME (real time minus pauses) ─────
-      // Note: totalWorkoutSeconds is calculated once at workout start (line 649)
-      // and stored as a global variable. We use that value here.
-      let elapsed = 0;
-      if (workoutStartedAt) {
-        const now = Date.now();
-        const currentPauseTime = (isPaused && lastPauseStart) ? (now - lastPauseStart) : 0;
-        elapsed = Math.ceil((now - workoutStartedAt - pausedTimeTotal - currentPauseTime) / 1000);
-      }
+      // ───── CALCULATE ACTUAL REMAINING TIME ─────
+      // Instead of using elapsed time (which can drift), calculate based on actual remaining phases
+      const remaining = calculateRemainingTime(
+        currentRound,
+        currentRep,
+        isWorking,
+        isRoundRest,
+        rounds,
+        repsPerRound,
+        workSec,
+        restSec,
+        roundRestSec,
+        totalSeconds
+      );
 
-      const remaining = Math.max(0, totalWorkoutSeconds - elapsed);
-
-      const mins = Math.floor(remaining / 60);
-      const secs = (remaining % 60).toString().padStart(2, '0');
-      const timeLeft = remaining >= 60 ? `${mins}m ${secs}s left` : `${remaining}s left`;
-      const workoutProgressPct = Math.floor((elapsed / totalWorkoutSeconds) * 100);
+      const remainingRounded = Math.ceil(remaining);
+      const mins = Math.floor(remainingRounded / 60);
+      const secs = (remainingRounded % 60).toString().padStart(2, '0');
+      const timeLeft = remainingRounded >= 60 ? `${mins}m ${secs}s left` : `${remainingRounded}s left`;
+      const workoutProgressPct = totalWorkoutSeconds > 0 ? Math.floor(((totalWorkoutSeconds - remaining) / totalWorkoutSeconds) * 100) : 0;
 
       // Update Scoreboard Grid
       updateScoreboardGrid();
@@ -643,8 +642,8 @@
         const restSec = parseInt(document.getElementById('rest').value);
         const roundRestSec = parseInt(document.getElementById('roundRest').value);
         // Calculate total workout duration
-        const timePerRound = repsPerRound * workSec + (repsPerRound - 1) * restSec;
-        totalWorkoutSeconds = rounds * timePerRound + (rounds - 1) * roundRestSec;
+        // Calculate total workout duration
+        totalWorkoutSeconds = calculateTotalWorkoutTime(rounds, repsPerRound, workSec, restSec, roundRestSec);
 
         toggleView(true); // Switch to running view
       }
@@ -745,7 +744,7 @@
     }
 
     // Main button logic
-    mainBtn.onclick = () => {
+    mainBtn.addEventListener('click', () => {
       if (!isRunning) {
         startTimer();
       } else if (isPaused) {
@@ -753,10 +752,10 @@
       } else {
         pauseTimer();
       }
-    };
+    });
 
-    stopBtn.onclick = stopTimer;
-    document.getElementById('resetBtn').onclick = resetTimer;
+    stopBtn.addEventListener('click', stopTimer);
+    document.getElementById('resetBtn').addEventListener('click', resetTimer);
 
     // Press Enter to start/resume
     document.addEventListener('keydown', e => {
@@ -843,7 +842,8 @@
     });
 
     // Also update when page first loads
-    updateTotalWorkoutTime();
+    // Also update when page first loads
+    // updateTotalWorkoutTime(); // REMOVED: Called in initApp via loadWorkout
 
     function updateTotalWorkoutTime() {
       const rounds = parseInt(document.getElementById('rounds').value) || 0;
@@ -857,19 +857,18 @@
         return;
       }
 
-      const timePerFullRound = repsPerRound * workSec + (repsPerRound - 1) * restSec + roundRestSec;
-      const lastRoundTime = repsPerRound * workSec + (repsPerRound - 1) * restSec;
-      const totalSeconds = (rounds - 1) * timePerFullRound + lastRoundTime;
+      const totalTime = calculateTotalWorkoutTime(rounds, repsPerRound, workSec, restSec, roundRestSec);
 
-      const mins = Math.floor(totalSeconds / 60);
-      const secs = (totalSeconds % 60).toString().padStart(2, '0');
+      const mins = Math.floor(totalTime / 60);
+      const secs = (totalTime % 60).toString().padStart(2, '0');
       document.getElementById('totalTimeDisplay').textContent =
-        totalSeconds >= 3600 ? `${Math.floor(totalSeconds / 3600)}h ${mins}m ${secs}s` :
-          mins > 0 ? `${mins}m ${secs}s` : `${totalSeconds}s`;
+        totalTime >= 3600 ? `${Math.floor(totalTime / 3600)}h ${mins}m ${secs}s` :
+          mins > 0 ? `${mins}m ${secs}s` : `${totalTime}s`;
     }
 
     // Call it on page load and whenever any input changes
-    window.addEventListener('load', updateTotalWorkoutTime);
+    // Call it on page load and whenever any input changes
+    // window.addEventListener('load', updateTotalWorkoutTime); // REMOVED: Handled in initApp
     document.querySelectorAll('#rounds, #reps, #work, #rest, #roundRest').forEach(input => {
       input.addEventListener('input', updateTotalWorkoutTime);
     });
@@ -1012,12 +1011,21 @@
     }
 
     // Init on load
-    window.addEventListener('load', () => {
+    // Init on load
+    // Init App
+    function initApp() {
       initInputValues();
       initScoreboard();
       initWorkoutModal();
       loadWorkout(currentWorkout); // Load default workout (Alfredson)
-    });
+    }
+
+    // Run initialization when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initApp);
+    } else {
+      initApp();
+    }
 
 
   </script>
