@@ -17,17 +17,17 @@ describe('formatTime', () => {
 describe('calculateTotalWorkoutTime', () => {
     it('calculates total time correctly for Alfredson protocol', () => {
         // 6 rounds, 15 reps, 5 work, 1 rest, 30 round rest
-        // Time per round = 15*5 + 14*1 = 75 + 14 = 89s
-        // Total = 6*89 + 5*30 = 534 + 150 = 684s
+        // Time per round = 15*5 + 15*1 = 75 + 15 = 90s
+        // Total = 6*90 + 5*30 = 540 + 150 = 690s
         const total = calculateTotalWorkoutTime(6, 15, 5, 1, 30);
-        expect(total).toBe(684);
+        expect(total).toBe(690);
     });
 
     it('calculates total time correctly for single round', () => {
         // 1 round, 10 reps, 10 work, 5 rest, 20 round rest
-        // Time = 10*10 + 9*5 = 100 + 45 = 145s (round rest ignored for single round)
+        // Time = 10*10 + 10*5 = 100 + 50 = 150s (round rest ignored for single round)
         const total = calculateTotalWorkoutTime(1, 10, 10, 5, 20);
-        expect(total).toBe(145);
+        expect(total).toBe(150);
     });
 
     it('returns 0 if rounds or reps are 0', () => {
@@ -47,44 +47,36 @@ describe('calculateRemainingTime', () => {
     it('calculates full workout time at start', () => {
         // Round 1, Rep 1, Working, 5s left in phase
         const remaining = calculateRemainingTime(1, 1, true, false, rounds, reps, work, rest, roundRest, 5);
-        expect(remaining).toBe(684);
+        expect(remaining).toBe(690);
     });
 
     it('calculates time correctly during round rest', () => {
         // End of Round 1 (Round Rest), 30s left
         // Remaining: 30s (current phase) + 5 full rounds
-        // 5 rounds = 5 * 89 + 4 * 30 = 445 + 120 = 565s
-        // Total = 30 + 565 = 595s
+        // 5 rounds = 5 * 90 + 4 * 30 = 450 + 120 = 570s
+        // Total = 30 + 570 = 600s
         const remaining = calculateRemainingTime(1, 15, false, true, rounds, reps, work, rest, roundRest, 30);
-        expect(remaining).toBe(595);
+        expect(remaining).toBe(600);
     });
 
     it('calculates time correctly during last rep of last round', () => {
         // Round 6, Rep 15, Working, 2s left
+        // Remaining: 2s (current work) + 1s (rest after last rep) = 3s
         const remaining = calculateRemainingTime(6, 15, true, false, rounds, reps, work, rest, roundRest, 2);
-        expect(remaining).toBe(2);
+        expect(remaining).toBe(3);
     });
 
     it('calculates time correctly mid-workout', () => {
         // Start of Round 2, Rep 1, Working, 5s left
-        // Remaining: 5s (current) + (14 reps + 14 rests) + 4 full rounds + 4 round rests
-        // Round 2 remaining: 14*5 + 14*1 = 70 + 14 = 84s
-        // Round 2 total remaining: 5 + 84 = 89s
-        // Future rounds (3,4,5,6): 4 * 89 + 3 * 30 = 356 + 90 = 446s
-        // Round rest after Round 2: 30s
-        // Total = 89 + 30 + 446 = 565s
-
-        // Wait, let's re-calculate manually:
-        // We are at Round 2, Rep 1.
-        // Remaining in Round 2: 89s (full round)
+        // Remaining in Round 2: 90s (full round)
         // Remaining rounds (3,4,5,6): 4 rounds
-        // Round rests remaining: After R2, R3, R4, R5 = 4 round rests?
-        // No, round rests are between rounds.
-        // R1 (done) -> Rest (done) -> R2 (current) -> Rest -> R3 -> Rest -> R4 -> Rest -> R5 -> Rest -> R6
-        // So we have Round 2 (89s) + Rest (30s) + R3 (89s) + Rest (30s) + R4 (89s) + Rest (30s) + R5 (89s) + Rest (30s) + R6 (89s)
-        // Total = 5 * 89 + 4 * 30 = 445 + 120 = 565s
+        // Round 2 remaining: 15*5 + 15*1 = 75 + 15 = 90s
+        // Round 2 total remaining: 5 (current work) + 1 (current rest) + 14*(5+1) = 6 + 84 = 90s
+        // Future rounds (3,4,5,6): 4 * 90 + 3 * 30 = 360 + 90 = 450s
+        // Round rest after Round 2: 30s
+        // Total = 90 + 30 + 450 = 570s
 
         const remaining = calculateRemainingTime(2, 1, true, false, rounds, reps, work, rest, roundRest, 5);
-        expect(remaining).toBe(565);
+        expect(remaining).toBe(570);
     });
 });

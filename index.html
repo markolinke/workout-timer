@@ -414,6 +414,50 @@
           rest: 3,
           roundRest: 20
         }
+      },
+      {
+        id: 'test-1r-1rep',
+        name: 'Test: 1R x 1Rep',
+        config: {
+          rounds: 1,
+          reps: 1,
+          work: 1,
+          rest: 1,
+          roundRest: 1
+        }
+      },
+      {
+        id: 'test-2r-1rep',
+        name: 'Test: 2R x 1Rep',
+        config: {
+          rounds: 2,
+          reps: 1,
+          work: 1,
+          rest: 1,
+          roundRest: 2
+        }
+      },
+      {
+        id: 'test-1r-2reps',
+        name: 'Test: 1R x 2Reps',
+        config: {
+          rounds: 1,
+          reps: 2,
+          work: 1,
+          rest: 1,
+          roundRest: 1
+        }
+      },
+      {
+        id: 'test-2r-2reps',
+        name: 'Test: 2R x 2Reps',
+        config: {
+          rounds: 2,
+          reps: 2,
+          work: 1,
+          rest: 1,
+          roundRest: 2
+        }
       }
     ];
 
@@ -600,10 +644,15 @@
         isWorking = true;
         totalSeconds = workSec;
       } else if (isWorking) {
-        // End of work
+        // End of work → ALWAYS rest (between reps)
         isWorking = false;
+        totalSeconds = restSec;
+      } else {
+        // End of rest (between reps)
+        // Check if we finished all reps in this round
         currentRep++;
         if (currentRep > repsPerRound) {
+          // Finished all reps for this round
           if (currentRound === totalRounds) {
             finishWorkout();
             return;
@@ -611,12 +660,10 @@
           isRoundRest = true;
           totalSeconds = roundRestSec;
         } else {
-          totalSeconds = restSec;
+          // Next rep
+          isWorking = true;
+          totalSeconds = workSec;
         }
-      } else {
-        // End of rest → next rep
-        isWorking = true;
-        totalSeconds = workSec;
       }
 
       updateProgress();
