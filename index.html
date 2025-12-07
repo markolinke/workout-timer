@@ -96,13 +96,34 @@
       background: #4CAF50;
       color: white;
       font-weight: bold;
+      margin: 12px 8px;
+      /* Closer to neighbors */
+      width: 90px;
+      /* Slightly larger for emphasis */
+      height: 90px;
     }
 
+    #prevBtn,
+    #nextBtn {
+      background: #333;
+      /* Dark background */
+      margin: 12px 8px;
+      /* Closer to main button */
+      width: 60px;
+      /* Smaller than main */
+      height: 60px;
+    }
 
+    #prevBtn:hover,
+    #nextBtn:hover {
+      background: #444;
+    }
 
     #resetBtn {
       background: #555;
       color: white;
+      margin-left: 40px;
+      /* Push away from the group */
     }
 
     .timer-display {
@@ -346,6 +367,13 @@
     </div>
 
     <div style="display: flex; justify-content: center; align-items: center;">
+      <button id="prevBtn" class="hidden">
+        <!-- Prev Icon -->
+        <svg viewBox="0 0 24 24">
+          <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
+        </svg>
+      </button>
+
       <button id="mainBtn">
         <!-- Play Icon -->
         <svg id="icon-play" viewBox="0 0 24 24">
@@ -354,6 +382,13 @@
         <!-- Pause Icon -->
         <svg id="icon-pause" class="hidden" viewBox="0 0 24 24">
           <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+        </svg>
+      </button>
+
+      <button id="nextBtn" class="hidden">
+        <!-- Next Icon -->
+        <svg viewBox="0 0 24 24">
+          <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
         </svg>
       </button>
 
@@ -486,6 +521,8 @@
     const timerDisplay = document.getElementById('timer');
     const progressDisplay = document.getElementById('progress');
     const mainBtn = document.getElementById('mainBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
 
     const setupContainer = document.getElementById('setup-container');
     const runningContainer = document.getElementById('running-container');
@@ -513,11 +550,15 @@
       if (showRunning) {
         setupContainer.classList.add('hidden');
         runningContainer.classList.remove('hidden');
-        resetBtn.classList.remove('hidden'); // Show Reset (Stop) button in running view
+        resetBtn.classList.remove('hidden');
+        prevBtn.classList.remove('hidden');
+        nextBtn.classList.remove('hidden');
       } else {
         setupContainer.classList.remove('hidden');
         runningContainer.classList.add('hidden');
-        resetBtn.classList.add('hidden'); // Hide Reset (Stop) button in setup view
+        resetBtn.classList.add('hidden');
+        prevBtn.classList.add('hidden');
+        nextBtn.classList.add('hidden');
       }
     }
 
@@ -797,10 +838,141 @@
 
       playBeep(8, 250);
       document.body.style.background = '#1b5e20';
-
-      // Note: We stay in running view so user can see they are done.
-      // They must press RESET to go back to setup.
     }
+
+    function prevRep() {
+      if (!isRunning && !isPaused) return; // Only active during workout
+
+      const workSec = parseInt(document.getElementById('work').value);
+      const restSec = parseInt(document.getElementById('rest').value);
+      const roundRestSec = parseInt(document.getElementById('roundRest').value);
+      const repsPerRound = parseInt(document.getElementById('reps').value);
+
+      // Calculate elapsed time in current rep
+      let elapsedInRep = 0;
+      if (isRoundRest) {
+        // In round rest, we consider ourselves "past" the last rep.
+        // So any press should probably go back to the last rep.
+        // Let's treat elapsed as > 1s effectively to trigger "restart current" logic 
+        // which for round rest we might want to define as "restart round rest" or "go back to last rep"?
+        // User said: "revert the workout to beginning of the previous rep"
+        // If in Round Rest, "previous rep" is the last rep of the completed round.
+        elapsedInRep = 0; // Logic below will handle the jump
+      } else {
+        if (isWorking) {
+          elapsedInRep = workSec - totalSeconds;
+        } else {
+          elapsedInRep = workSec + (restSec - totalSeconds);
+        }
+      }
+
+      // Logic:
+      // a) if elapsed < 1s: revert to beginning of PREVIOUS rep
+      // b) if elapsed >= 1s: revert to beginning of CURRENT rep
+
+      // Special handling for Round Rest:
+      // If in Round Rest, we are technically "between" rounds.
+      // Let's assume we always want to go back to the last rep of the previous round.
+      if (isRoundRest) {
+        isRoundRest = false;
+        // currentRound is already the round that just finished? 
+        // No, wait. In nextPhase(), we increment currentRound AFTER round rest.
+        // So during Round Rest, currentRound is the round that just finished.
+        // Wait, let's check nextPhase again.
+        // } else if (isWorking) { ... } else { ... if (currentRep > repsPerRound) { isRoundRest = true; ... } }
+        // So during Round Rest, currentRound is the round that just finished.
+        // So we want to go to the last rep of THIS currentRound.
+        currentRep = repsPerRound;
+        isWorking = true;
+        totalSeconds = workSec;
+      } else {
+        if (elapsedInRep < 1.0) {
+          // Go to PREVIOUS rep
+          if (currentRep > 1) {
+            currentRep--;
+            isWorking = true;
+            totalSeconds = workSec;
+          } else {
+            // First rep of the round
+            if (currentRound > 1) {
+              currentRound--;
+              currentRep = repsPerRound;
+              isWorking = true;
+              totalSeconds = workSec;
+            } else {
+              // First rep of first round -> Just restart it
+              isWorking = true;
+              totalSeconds = workSec;
+            }
+          }
+        } else {
+          // Go to START of CURRENT rep
+          isWorking = true;
+          totalSeconds = workSec;
+        }
+      }
+
+      updateDisplay();
+      updateProgress();
+      updateVisualBars();
+      // Ensure background updates
+      document.body.style.background = '#222';
+      document.body.style.color = '#fff';
+      timerDisplay.style.color = '';
+    }
+
+    function nextRep() {
+      if (!isRunning && !isPaused) return;
+
+      const workSec = parseInt(document.getElementById('work').value);
+      const repsPerRound = parseInt(document.getElementById('reps').value);
+      const totalRounds = parseInt(document.getElementById('rounds').value);
+
+      // Always skip to beginning of NEXT rep
+
+      if (isRoundRest) {
+        // Skip round rest -> Start Rep 1 of Next Round
+        isRoundRest = false;
+        currentRound++;
+        currentRep = 1;
+        if (currentRound > totalRounds) {
+          finishWorkout();
+          return;
+        }
+        isWorking = true;
+        totalSeconds = workSec;
+      } else {
+        // Currently in a rep (Work or Rest)
+        currentRep++;
+        if (currentRep > repsPerRound) {
+          // Finished round -> Skip Round Rest -> Start Rep 1 of Next Round
+          currentRound++;
+          currentRep = 1;
+          if (currentRound > totalRounds) {
+            finishWorkout();
+            return;
+          }
+          isWorking = true;
+          totalSeconds = workSec;
+        } else {
+          // Next rep in same round
+          isWorking = true;
+          totalSeconds = workSec;
+        }
+      }
+
+      updateDisplay();
+      updateProgress();
+      updateVisualBars();
+      document.body.style.background = '#222';
+      document.body.style.color = '#fff';
+      timerDisplay.style.color = '';
+    }
+
+    prevBtn.addEventListener('click', prevRep);
+    nextBtn.addEventListener('click', nextRep);
+
+
 
     function updateMainButtonState() {
       const iconPlay = document.getElementById('icon-play');
