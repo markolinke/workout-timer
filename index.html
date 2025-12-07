@@ -84,18 +84,7 @@
       font-weight: bold;
     }
 
-    #stopBtn {
-      background: #f44336;
-      color: white;
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
 
-    #stopBtn.enabled {
-      background: #f44336;
-      opacity: 1;
-      cursor: pointer;
-    }
 
     #resetBtn {
       background: #555;
@@ -344,7 +333,7 @@
 
     <div>
       <button id="mainBtn">START</button>
-      <button id="stopBtn" disabled>STOP</button>
+
       <button id="resetBtn">RESET</button>
     </div>
 
@@ -469,7 +458,7 @@
     const timerDisplay = document.getElementById('timer');
     const progressDisplay = document.getElementById('progress');
     const mainBtn = document.getElementById('mainBtn');
-    const stopBtn = document.getElementById('stopBtn');
+
     const setupContainer = document.getElementById('setup-container');
     const runningContainer = document.getElementById('running-container');
     const tickTime = 100;
@@ -700,8 +689,7 @@
       isRunning = true;
       isPaused = false;
       mainBtn.textContent = "PAUSE";
-      stopBtn.disabled = true;
-      stopBtn.classList.remove('enabled');
+
 
       const workSec = parseInt(document.getElementById('work').value);
       if (totalSeconds === 0) {
@@ -719,8 +707,7 @@
       clearInterval(countdown);
       isPaused = true;
       mainBtn.textContent = "RESUME";
-      stopBtn.disabled = false;
-      stopBtn.classList.add('enabled');
+
       lastPauseStart = Date.now();
     }
 
@@ -732,16 +719,11 @@
 
       isPaused = false;
       mainBtn.textContent = "PAUSE";
-      stopBtn.disabled = true;
-      stopBtn.classList.remove('enabled');
+
       countdown = setInterval(tick, tickTime);
     }
 
-    function stopTimer() {
-      resetTimer();
-      clearInterval(countdown);
-      resetTimer();
-    }
+
 
     function resetTimer() {
       clearInterval(countdown);
@@ -754,8 +736,7 @@
       isPaused = false;
 
       mainBtn.textContent = "START";
-      stopBtn.disabled = true;
-      stopBtn.classList.remove('enabled');
+
 
       updateDisplay();
       progressDisplay.textContent = '';
@@ -782,7 +763,7 @@
       timerDisplay.textContent = "DONE!";
       progressDisplay.textContent = '';
       mainBtn.textContent = "START";
-      stopBtn.disabled = true;
+
       playBeep(8, 250);
       document.body.style.background = '#1b5e20';
 
@@ -801,7 +782,7 @@
       }
     });
 
-    stopBtn.addEventListener('click', stopTimer);
+
     document.getElementById('resetBtn').addEventListener('click', resetTimer);
 
     // Press Enter to start/resume
@@ -871,11 +852,7 @@
       // releaseWakeLock();
     };
 
-    const originalStopTimer = stopTimer;
-    stopTimer = function () {
-      originalStopTimer();
-      releaseWakeLock();           // ← allow screen to sleep again
-    };
+
 
     const originalResetTimer = resetTimer;
     resetTimer = function () {
