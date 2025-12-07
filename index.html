@@ -145,96 +145,102 @@
       display: none !important;
     }
 
-    /* FLAMBOYANT SCOREBOARD STYLES */
+    /* GRID SCOREBOARD STYLES */
     .scoreboard-container {
       display: block;
       width: fit-content;
       max-width: 100%;
       box-sizing: border-box;
-      /* overflow-x: auto;  <-- REMOVED so the container (and progress bar) doesn't scroll */
       margin: 25px auto;
       border-radius: 12px;
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.1);
       background: linear-gradient(145deg, #0a1f44, #051025);
-      /* Midnight Blue Gradient */
       padding: 15px;
       border: 1px solid #1e3a6e;
+      overflow-x: auto;
+      /* Allow horizontal scroll on desktop */
     }
 
-    .sb-table {
-      border-collapse: separate;
-      /* Allow spacing */
-      border-spacing: 6px;
-      /* Gap between cells */
-      color: #fff;
-      font-family: 'Verdana', sans-serif;
+    .sb-grid {
+      display: grid;
+      gap: 6px;
+      /* Desktop Default: Horizontal Flow */
+      grid-template-rows: auto auto;
+      /* Planned, Completed */
+      grid-auto-flow: column;
+      align-items: center;
     }
 
-    .sb-table th,
-    .sb-table td {
-      border: none;
-      /* Remove default borders */
+    /* Common Cell Styles */
+    .sb-cell {
       padding: 10px 5px;
       text-align: center;
       min-width: 45px;
       border-radius: 8px;
-      /* Rounded cells */
       position: relative;
       transition: all 0.3s ease;
+      font-family: 'Verdana', sans-serif;
     }
 
-    /* Header Column (Planned / Completed) */
-    .sb-header-col {
-      background: transparent;
+    /* Headers */
+    .sb-header {
       color: #88aadd;
       font-weight: bold;
-      text-align: right;
-      padding-right: 15px;
       text-transform: uppercase;
       letter-spacing: 1px;
       font-size: 0.8em;
-      width: 100px;
-      border: none !important;
+      background: transparent;
+      border: none;
     }
 
-    /* Row Styling */
-    .row-planned td:not(.sb-header-col) {
+    .sb-header-round,
+    .sb-round-label {
+      display: none;
+      /* Hidden on desktop */
+    }
+
+    .sb-header-planned,
+    .sb-header-completed {
+      text-align: right;
+      padding-right: 15px;
+      width: 100px;
+    }
+
+    /* Values */
+    .sb-val-planned {
       background-color: rgba(255, 255, 255, 0.05);
       color: #aaa;
       font-size: 0.9em;
     }
 
-    .row-completed td:not(.sb-header-col) {
+    .sb-val-completed {
       background-color: rgba(255, 255, 255, 0.1);
       font-weight: bold;
       font-size: 1.2em;
+      color: #fff;
     }
 
-    /* Active Column Highlight - THE FLAMBOYANT PART */
+    /* Active/Past/Future Styles */
     .col-active {
       background-color: #ccff00 !important;
-      /* Neon Tennis Yellow */
       color: #000 !important;
       box-shadow: 0 0 15px rgba(204, 255, 0, 0.6);
-      /* Glow */
       transform: scale(1.1);
       z-index: 10;
       border: 2px solid #fff;
-    }
-
-    /* Future/Past Column Styling */
-    .col-future {
-      opacity: 0.5;
+      animation: pulse-glow 2s infinite;
     }
 
     .col-past {
       background-color: #004d25 !important;
-      /* Wimbledon Green */
       color: #fff !important;
       border: 1px solid #006633;
     }
 
-    /* Pulse Animation for Active Cell */
+    .col-future {
+      opacity: 0.5;
+    }
+
     @keyframes pulse-glow {
       0% {
         box-shadow: 0 0 10px rgba(204, 255, 0, 0.4);
@@ -249,8 +255,75 @@
       }
     }
 
-    .col-active {
-      animation: pulse-glow 2s infinite;
+    /* MOBILE: Vertical Flow */
+    @media (max-width: 600px) {
+      .scoreboard-container {
+        width: 100%;
+        overflow-x: visible;
+        /* No scroll needed usually, or vertical scroll handled by page */
+        padding: 10px;
+        /* Reduce container padding */
+      }
+
+      .sb-grid {
+        grid-template-rows: auto;
+        /* Reset rows */
+        grid-template-columns: 0.4fr 1fr 1fr;
+        /* Reduce Round column width */
+        grid-auto-flow: row;
+        gap: 4px;
+        /* Reduce gap */
+      }
+
+      .sb-header-round,
+      .sb-round-label {
+        display: block;
+        /* Show on mobile */
+        text-align: center;
+        /* Center align round number */
+        padding-left: 0;
+        color: #88aadd;
+        font-weight: bold;
+      }
+
+      .sb-round-label {
+        font-size: 0.9em;
+        color: #aaa;
+      }
+
+      .sb-header-planned,
+      .sb-header-completed {
+        text-align: center;
+        width: auto;
+        padding: 0;
+      }
+
+      /* Adjust cell styles for mobile */
+      .sb-cell {
+        min-width: auto;
+        padding: 6px 2px;
+        /* Reduce cell padding */
+        font-size: 0.9em;
+        /* Slightly smaller font */
+      }
+
+      /* Toggle Text Visibility */
+      .desktop-text {
+        display: none;
+      }
+
+      .mobile-text {
+        display: inline;
+      }
+    }
+
+    /* Desktop Defaults for Text Toggles */
+    .mobile-text {
+      display: none;
+    }
+
+    .desktop-text {
+      display: inline;
     }
 
     /* MODAL STYLES */
@@ -405,10 +478,10 @@
       <div class="timer-display" id="timer">00:00</div>
       <!-- GRID SCOREBOARD -->
       <div class="scoreboard-container">
-        <div style="overflow-x: auto; width: 100%; padding-bottom: 5px;">
-          <table class="sb-table" id="sbTable">
+        <div style="width: 100%; padding-bottom: 5px;">
+          <div class="sb-grid" id="sbGrid">
             <!-- Generated by JS -->
-          </table>
+          </div>
         </div>
 
         <!-- TOTAL PROGRESS BAR -->
@@ -1126,27 +1199,26 @@
     function initScoreboard() {
       const rounds = parseInt(document.getElementById('rounds').value) || 6;
       const reps = parseInt(document.getElementById('reps').value) || 15;
-      const table = document.getElementById('sbTable');
+      const grid = document.getElementById('sbGrid');
 
       let html = '';
 
-      // Row 1: Planned
-      html += '<tr class="row-planned">';
-      html += '<td class="sb-header-col">Planned</td>';
-      for (let i = 1; i <= rounds; i++) {
-        html += `<td id="sb-plan-${i}">${reps}</td>`;
-      }
-      html += '</tr>';
+      // Headers
+      html += `<div class="sb-cell sb-header sb-header-round">Round</div>`;
+      html += `<div class="sb-cell sb-header sb-header-planned"><span class="desktop-text">Plan</span><span class="mobile-text">Plan</span></div>`;
+      html += `<div class="sb-cell sb-header sb-header-completed"><span class="desktop-text">Done</span><span class="mobile-text">Done</span></div>`;
 
-      // Row 2: Completed
-      html += '<tr class="row-completed">';
-      html += '<td class="sb-header-col">Completed</td>';
+      // Rounds
       for (let i = 1; i <= rounds; i++) {
-        html += `<td id="sb-comp-${i}">0</td>`;
+        // Round Label (Mobile only) - Just the number
+        html += `<div class="sb-cell sb-round-label">${i}</div>`;
+        // Planned Value
+        html += `<div id="sb-plan-${i}" class="sb-cell sb-val-planned">${reps}</div>`;
+        // Completed Value
+        html += `<div id="sb-comp-${i}" class="sb-cell sb-val-completed">0</div>`;
       }
-      html += '</tr>';
 
-      table.innerHTML = html;
+      grid.innerHTML = html;
       updateScoreboardGrid();
     }
 
@@ -1159,9 +1231,9 @@
         const cellComp = document.getElementById(`sb-comp-${i}`);
         if (!cellPlan || !cellComp) continue;
 
-        // Reset classes
-        cellPlan.className = '';
-        cellComp.className = '';
+        // Reset classes (keep base classes)
+        cellPlan.className = 'sb-cell sb-val-planned';
+        cellComp.className = 'sb-cell sb-val-completed';
 
         if (i < currentRound) {
           // Past rounds
@@ -1170,11 +1242,7 @@
           cellComp.classList.add('col-past');
         } else if (i === currentRound) {
           // Current round
-          // If we are in round rest (finished the round), show full reps, otherwise show current rep-1 (completed)
           let completedInRound = isRoundRest ? repsPerRound : currentRep - (isRunning ? 0 : 1);
-
-          // If we are working on rep 1, completed is 0.
-
           cellComp.textContent = completedInRound;
           cellPlan.classList.add('col-active');
           cellComp.classList.add('col-active');
