@@ -69,13 +69,27 @@
     }
 
     button {
-      padding: 14px 32px;
-      font-size: 1.4em;
-      margin: 12px 8px;
+      padding: 0;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
       cursor: pointer;
       border: none;
-      border-radius: 10px;
-      min-width: 140px;
+      margin: 12px 20px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.1s, background-color 0.2s;
+    }
+
+    button:active {
+      transform: scale(0.95);
+    }
+
+    button svg {
+      width: 40px;
+      height: 40px;
+      fill: white;
     }
 
     #mainBtn {
@@ -331,10 +345,25 @@
       </div>
     </div>
 
-    <div>
-      <button id="mainBtn">START</button>
+    <div style="display: flex; justify-content: center; align-items: center;">
+      <button id="mainBtn">
+        <!-- Play Icon -->
+        <svg id="icon-play" viewBox="0 0 24 24">
+          <path d="M8 5v14l11-7z" />
+        </svg>
+        <!-- Pause Icon -->
+        <svg id="icon-pause" class="hidden" viewBox="0 0 24 24">
+          <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+        </svg>
+      </button>
 
-      <button id="resetBtn">RESET</button>
+      <button id="resetBtn">
+        <!-- Reset / Undo Icon -->
+        <svg viewBox="0 0 24 24">
+          <path
+            d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.17 8 12.5 8z" />
+        </svg>
+      </button>
     </div>
 
     <!-- RUNNING CONTAINER -->
@@ -688,7 +717,7 @@
 
       isRunning = true;
       isPaused = false;
-      mainBtn.textContent = "PAUSE";
+      updateMainButtonState();
 
 
       const workSec = parseInt(document.getElementById('work').value);
@@ -706,7 +735,7 @@
     function pauseTimer() {
       clearInterval(countdown);
       isPaused = true;
-      mainBtn.textContent = "RESUME";
+      updateMainButtonState();
 
       lastPauseStart = Date.now();
     }
@@ -718,7 +747,7 @@
       }
 
       isPaused = false;
-      mainBtn.textContent = "PAUSE";
+      updateMainButtonState();
 
       countdown = setInterval(tick, tickTime);
     }
@@ -735,7 +764,7 @@
       isRunning = false;
       isPaused = false;
 
-      mainBtn.textContent = "START";
+      updateMainButtonState();
 
 
       updateDisplay();
@@ -762,13 +791,30 @@
 
       timerDisplay.textContent = "DONE!";
       progressDisplay.textContent = '';
-      mainBtn.textContent = "START";
+      updateMainButtonState();
 
       playBeep(8, 250);
       document.body.style.background = '#1b5e20';
 
       // Note: We stay in running view so user can see they are done.
       // They must press RESET to go back to setup.
+    }
+
+    function updateMainButtonState() {
+      const iconPlay = document.getElementById('icon-play');
+      const iconPause = document.getElementById('icon-pause');
+
+      if (isRunning && !isPaused) {
+        // Show Pause
+        iconPlay.classList.add('hidden');
+        iconPause.classList.remove('hidden');
+        mainBtn.style.backgroundColor = '#f44336'; // Red for pause
+      } else {
+        // Show Play (Start or Resume)
+        iconPlay.classList.remove('hidden');
+        iconPause.classList.add('hidden');
+        mainBtn.style.backgroundColor = '#4CAF50'; // Green for play
+      }
     }
 
     // Main button logic
@@ -787,8 +833,11 @@
 
     // Press Enter to start/resume
     document.addEventListener('keydown', e => {
-      if (e.key === 'Enter' && (mainBtn.textContent === 'START' || mainBtn.textContent === 'RESUME')) {
-        mainBtn.click();
+      if (e.key === 'Enter') {
+        // If not running, or running and paused -> click main button (which is Play/Resume)
+        if (!isRunning || isPaused) {
+          mainBtn.click();
+        }
       }
     });
 
@@ -798,12 +847,12 @@
       if (e.key === ' ' || e.key === 'Enter') {
         e.preventDefault(); // prevents page scroll when pressing space
 
-        // If we're on the "START" or "RESUME" button → click it
-        if (mainBtn.textContent === 'START' || mainBtn.textContent === 'RESUME') {
+        // If we're on the "START" or "RESUME" state → click it
+        if (!isRunning || isPaused) {
           mainBtn.click();
         }
         // If we're running and not already paused → pause
-        else if (mainBtn.textContent === 'PAUSE' && isRunning && !isPaused) {
+        else if (isRunning && !isPaused) {
           mainBtn.click(); // triggers pause
         }
       }
