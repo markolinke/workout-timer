@@ -740,17 +740,14 @@
     const muteBtn = document.getElementById('muteBtn');
     const iconSoundOn = document.getElementById('icon-sound-on');
     const iconSoundOff = document.getElementById('icon-sound-off');
-    let isMuted = false;
+    const savedIsMuted = localStorage.getItem('isMuted');
+    let isMuted = savedIsMuted ? savedIsMuted === 'true' : false;
 
     muteBtn.addEventListener('click', () => {
       isMuted = !isMuted;
-      if (isMuted) {
-        iconSoundOn.classList.add('hidden');
-        iconSoundOff.classList.remove('hidden');
-      } else {
-        iconSoundOn.classList.remove('hidden');
-        iconSoundOff.classList.add('hidden');
-      }
+      showIsMutedButton(isMuted);
+      // Store the isMuted variable in localStorage
+      localStorage.setItem('isMuted', isMuted);
     });
 
     let audioCtx;
@@ -1439,6 +1436,16 @@
       });
     }
 
+    function showIsMutedButton(isMuted) {
+      if (isMuted) {
+        iconSoundOn.classList.add('hidden');
+        iconSoundOff.classList.remove('hidden');
+      } else {
+        iconSoundOn.classList.remove('hidden');
+        iconSoundOff.classList.add('hidden');
+      }
+    }
+
     // Init on load
     // Init on load
     // Init App
@@ -1447,6 +1454,7 @@
       initScoreboard();
       initWorkoutModal();
       loadWorkout(currentWorkout); // Load default workout (Alfredson)
+      showIsMutedButton(isMuted);
     }
 
     // Run initialization when DOM is ready
