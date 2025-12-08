@@ -648,7 +648,7 @@
     const PREDEFINED_WORKOUTS = [
       {
         id: 'alfredson',
-        name: 'Alfredson Protocol',
+        name: 'Alfredson',
         config: {
           rounds: 6,
           reps: 15,
@@ -659,7 +659,7 @@
       },
       {
         id: 'calf-2x15',
-        name: 'Calf raise 2x15',
+        name: 'Calf Raise',
         config: {
           rounds: 2,
           reps: 12,
@@ -1437,7 +1437,7 @@
     // Load a predefined workout
     function loadWorkout(workout) {
       currentWorkout = workout;
-      document.getElementById('workoutTitle').textContent = workout.name;
+      document.getElementById('workoutTitle').textContent = workout.name + ' ' + workout.config.rounds + ' x ' + workout.config.reps;
       document.getElementById('rounds').value = workout.config.rounds;
       document.getElementById('reps').value = workout.config.reps;
       document.getElementById('work').value = workout.config.work;
@@ -1456,7 +1456,7 @@
 
       // Populate workout list
       workoutList.innerHTML = PREDEFINED_WORKOUTS.map(workout =>
-        `<button class="workout-option" data-workout-id="${workout.id}">${workout.name}</button>`
+        `<button class="workout-option" data-workout-id="${workout.id}">${workout.name} ${workout.config.rounds} x ${workout.config.reps}</button>`
       ).join('');
 
       // Open modal
