@@ -807,6 +807,64 @@
 
     let audioCtx;
 
+    // Helper function to play a single tone
+    function playTone(frequency, duration, type = 'sine') {
+      if (isMuted) return;
+
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+
+      oscillator.type = type;
+      oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+
+      // Fade out to avoid clicking
+      gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+
+      oscillator.start();
+      oscillator.stop(audioCtx.currentTime + duration);
+    }
+
+    // 1. Rep Start Sound - High, sharp, motivational "go!" sound
+    function playRepStartSound() {
+      if (isMuted) return;
+      playTone(1000, 0.08); // High pitch, short beep
+    }
+
+    // 2. Rep End Sound - Lower pitch acknowledgment
+    function playRepEndSound() {
+      if (isMuted) return;
+      playTone(600, 0.1); // Lower pitch, slightly longer
+    }
+
+    // 3. Round Rest Start Sound - Distinctive double beep
+    function playRoundRestStartSound() {
+      if (isMuted) return;
+      playTone(700, 0.12); // First beep
+      setTimeout(() => {
+        playTone(700, 0.12); // Second beep after short delay
+      }, 150);
+    }
+
+    // 4. Workout End Sound - Celebratory ascending sequence
+    function playWorkoutEndSound() {
+      if (isMuted) return;
+      const frequencies = [523, 659, 784, 1047]; // C5, E5, G5, C6 (C major chord)
+      frequencies.forEach((freq, index) => {
+        setTimeout(() => {
+          playTone(freq, 0.2);
+        }, index * 150);
+      });
+    }
+
+    // Legacy function for backward compatibility (used for phase transitions)
     function playBeep(times = 1, delay = 200) {
       if (isMuted) return;
 
@@ -920,7 +978,6 @@
       }
 
       if (totalSeconds <= 0) {
-        playBeep(3, 150);
         nextPhase();
       }
     }
@@ -943,10 +1000,12 @@
         }
         isWorking = true;
         totalSeconds = workSec;
+        playRepStartSound(); // Rep start sound
       } else if (isWorking) {
         // End of work → ALWAYS rest (between reps)
         isWorking = false;
         totalSeconds = restSec;
+        playRepEndSound(); // Rep end sound
       } else {
         // End of rest (between reps)
         // Check if we finished all reps in this round
@@ -959,10 +1018,12 @@
           }
           isRoundRest = true;
           totalSeconds = roundRestSec;
+          playRoundRestStartSound(); // Round rest start sound
         } else {
           // Next rep
           isWorking = true;
           totalSeconds = workSec;
+          playRepStartSound(); // Rep start sound
         }
       }
 
@@ -1008,6 +1069,10 @@
           (isWorking ? workSec : parseInt(document.getElementById('rest').value));
         if (totalSeconds === 0) totalSeconds = workSec;
         updateProgress();
+        // Play rep start sound when workout first begins (if starting with work phase)
+        if (isWorking && !isRoundRest) {
+          playRepStartSound();
+        }
       }
 
       updateDisplay();
@@ -1076,7 +1141,7 @@
       progressDisplay.textContent = '';
       updateMainButtonState();
 
-      playBeep(8, 250);
+      playWorkoutEndSound(); // Workout end sound
       document.body.style.background = '#1b5e20';
     }
 
