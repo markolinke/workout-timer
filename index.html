@@ -1159,6 +1159,7 @@
 
       updateDisplay();
       countdown = setInterval(tick, tickTime);
+      requestWakeLock();           // ← keep screen on when workout starts
     }
 
     function pauseTimer() {
@@ -1167,6 +1168,7 @@
       updateMainButtonState();
 
       lastPauseStart = Date.now();
+      releaseWakeLock();
     }
 
     function resumeTimer() {
@@ -1179,6 +1181,7 @@
       updateMainButtonState();
 
       countdown = setInterval(tick, tickTime);
+      requestWakeLock();           // ← keep screen on when workout resumes
     }
 
 
@@ -1210,6 +1213,7 @@
       initScoreboard(); // Re-initialize scoreboard on reset
 
       toggleView(false); // Switch back to setup view
+      releaseWakeLock();           // ← make sure it's released on reset too
     }
 
     function finishWorkout() {
@@ -1448,27 +1452,15 @@
       }
     }
 
-    // Hook it into your existing timer states
-    const originalStartTimer = startTimer;
-    startTimer = function () {
-      originalStartTimer();
-      requestWakeLock();           // ← keep screen on when workout starts
-    };
-
-    const originalPauseTimer = pauseTimer;
-    pauseTimer = function () {
-      originalPauseTimer();
-      // Optional: you can release wake lock on pause if you want the screen to dim when paused
-      // releaseWakeLock();
-    };
-
-
-
-    const originalResetTimer = resetTimer;
-    resetTimer = function () {
-      originalResetTimer();
-      releaseWakeLock();           // ← make sure it's released on reset too
-    };
+    // Re-request wake lock when page becomes visible again (e.g., after switching tabs/apps)
+    document.addEventListener('visibilitychange', async () => {
+      if (document.visibilityState === 'visible') {
+        // If workout is running and not paused, re-request wake lock
+        if (isRunning && !isPaused) {
+          await requestWakeLock();
+        }
+      }
+    });
 
     // Auto-update total workout time whenever ANY setting changes
     document.querySelectorAll('input').forEach(input => {
