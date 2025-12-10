@@ -410,10 +410,18 @@
       width: 40px;
       height: 40px;
       transition: background 0.2s;
+      position: relative;
     }
 
     .mute-btn:hover {
       background: rgba(255, 255, 255, 0.1);
+    }
+
+    .sound-icon-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .mute-btn svg {
@@ -425,6 +433,44 @@
 
     .mute-btn:hover svg {
       fill: #fff;
+    }
+
+    .volume-bars {
+      position: absolute;
+      right: -18px;
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+      height: 16px;
+    }
+
+    .volume-bar {
+      width: 3px;
+      background: #4CAF50;
+      border-radius: 1px;
+      transition: height 0.2s, opacity 0.2s;
+      opacity: 0;
+      height: 0;
+    }
+
+    .volume-bar.active {
+      opacity: 1;
+    }
+
+    .volume-bar.bar-1 {
+      height: 4px;
+    }
+
+    .volume-bar.bar-2 {
+      height: 7px;
+    }
+
+    .volume-bar.bar-3 {
+      height: 11px;
+    }
+
+    .volume-bar.bar-4 {
+      height: 16px;
     }
 
     .workout-option {
@@ -624,16 +670,25 @@
       <div class="modal-header">
         Select Workout
         <button id="muteBtn" class="mute-btn" title="Toggle Sound">
-          <!-- Speaker Icon -->
-          <svg id="icon-sound-on" viewBox="0 0 24 24">
-            <path
-              d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
-          </svg>
-          <!-- Mute Icon -->
-          <svg id="icon-sound-off" class="hidden" viewBox="0 0 24 24">
-            <path
-              d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" />
-          </svg>
+          <div class="sound-icon-container">
+            <!-- Speaker Icon -->
+            <svg id="icon-sound-on" viewBox="0 0 24 24">
+              <path
+                d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+            </svg>
+            <!-- Mute Icon -->
+            <svg id="icon-sound-off" class="hidden" viewBox="0 0 24 24">
+              <path
+                d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" />
+            </svg>
+            <!-- Volume Bars Indicator -->
+            <div class="volume-bars">
+              <div class="volume-bar" id="volume-bar-1"></div>
+              <div class="volume-bar" id="volume-bar-2"></div>
+              <div class="volume-bar" id="volume-bar-3"></div>
+              <div class="volume-bar" id="volume-bar-4"></div>
+            </div>
+          </div>
         </button>
       </div>
       <div id="workoutList">
@@ -797,22 +852,46 @@
     const muteBtn = document.getElementById('muteBtn');
     const iconSoundOn = document.getElementById('icon-sound-on');
     const iconSoundOff = document.getElementById('icon-sound-off');
-    const savedIsMuted = localStorage.getItem('isMuted');
-    let isMuted = savedIsMuted ? savedIsMuted === 'true' : false;
-
-    muteBtn.addEventListener('click', () => {
-      isMuted = !isMuted;
-      showIsMutedButton(isMuted);
-      // Store the isMuted variable in localStorage
-      localStorage.setItem('isMuted', isMuted);
-    });
-
+    
     let audioCtx;
     let SOUND_VOLUME = 0.15; // Master volume control (0.0 to 1.0)
+    
+    // Volume levels in cycle order: 0.15 → 0.3 → 0.5 → 1.0 → 0 (muted) → 0.15
+    const VOLUME_LEVELS = [0.15, 0.3, 0.5, 1.0, 0];
+    
+    // Load saved volume from localStorage, default to 0.15
+    const savedVolume = localStorage.getItem('soundVolume');
+    if (savedVolume !== null) {
+      SOUND_VOLUME = parseFloat(savedVolume);
+    }
+    
+    // Helper function to get next volume in cycle
+    function getNextVolume(currentVolume) {
+      const currentIndex = VOLUME_LEVELS.indexOf(currentVolume);
+      if (currentIndex === -1) {
+        // If current volume not in list, default to 0.15
+        return 0.15;
+      }
+      const nextIndex = (currentIndex + 1) % VOLUME_LEVELS.length;
+      return VOLUME_LEVELS[nextIndex];
+    }
+    
+    // Helper function to format volume for display
+    function formatVolume(volume) {
+      if (volume === 0) return 'Muted';
+      return `${Math.round(volume * 100)}%`;
+    }
+
+    muteBtn.addEventListener('click', () => {
+      SOUND_VOLUME = getNextVolume(SOUND_VOLUME);
+      updateVolumeDisplay();
+      // Store the volume in localStorage
+      localStorage.setItem('soundVolume', SOUND_VOLUME);
+    });
 
     // Helper function to play a single tone
     function playTone(frequency, duration, type = 'sine') {
-      if (isMuted) return;
+      if (SOUND_VOLUME === 0) return;
 
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -837,19 +916,19 @@
 
     // 1. Rep Start Sound - High, sharp, motivational "go!" sound
     function playRepStartSound() {
-      if (isMuted) return;
+      if (SOUND_VOLUME === 0) return;
       playTone(1000, 0.08); // High pitch, short beep
     }
 
     // 2. Rep End Sound - Lower pitch acknowledgment
     function playRepEndSound() {
-      if (isMuted) return;
+      if (SOUND_VOLUME === 0) return;
       playTone(600, 0.1); // Lower pitch, slightly longer
     }
 
     // 3. Round Rest Start Sound - Distinctive double beep
     function playRoundRestStartSound() {
-      if (isMuted) return;
+      if (SOUND_VOLUME === 0) return;
       playTone(700, 0.12); // First beep
       setTimeout(() => {
         playTone(700, 0.12); // Second beep after short delay
@@ -858,7 +937,7 @@
 
     // 4. Workout End Sound - Celebratory ascending sequence
     function playWorkoutEndSound() {
-      if (isMuted) return;
+      if (SOUND_VOLUME === 0) return;
       const frequencies = [523, 659, 784, 1047]; // C5, E5, G5, C6 (C major chord)
       frequencies.forEach((freq, index) => {
         setTimeout(() => {
@@ -869,7 +948,7 @@
 
     // Legacy function for backward compatibility (used for phase transitions)
     function playBeep(times = 1, delay = 200) {
-      if (isMuted) return;
+      if (SOUND_VOLUME === 0) return;
 
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -1560,14 +1639,49 @@
       });
     }
 
-    function showIsMutedButton(isMuted) {
-      if (isMuted) {
+    function updateVolumeDisplay() {
+      // Get volume bar elements
+      const bar1 = document.getElementById('volume-bar-1');
+      const bar2 = document.getElementById('volume-bar-2');
+      const bar3 = document.getElementById('volume-bar-3');
+      const bar4 = document.getElementById('volume-bar-4');
+      
+      // Reset all bars
+      [bar1, bar2, bar3, bar4].forEach(bar => {
+        bar.classList.remove('active', 'bar-1', 'bar-2', 'bar-3', 'bar-4');
+      });
+      
+      if (SOUND_VOLUME === 0) {
+        // Muted: show sound-off icon, hide all bars
         iconSoundOn.classList.add('hidden');
         iconSoundOff.classList.remove('hidden');
+        muteBtn.title = 'Sound: Muted (click to cycle volume)';
       } else {
+        // Not muted: show sound-on icon and volume bars
         iconSoundOn.classList.remove('hidden');
         iconSoundOff.classList.add('hidden');
+        muteBtn.title = `Sound: ${formatVolume(SOUND_VOLUME)} (click to cycle volume)`;
+        
+        // Show volume bars based on volume level
+        if (SOUND_VOLUME >= 0.15) {
+          bar1.classList.add('active', 'bar-1');
+        }
+        if (SOUND_VOLUME >= 0.3) {
+          bar2.classList.add('active', 'bar-2');
+        }
+        if (SOUND_VOLUME >= 0.5) {
+          bar3.classList.add('active', 'bar-3');
+        }
+        if (SOUND_VOLUME >= 1.0) {
+          bar4.classList.add('active', 'bar-4');
+        }
       }
+    }
+    
+    // Legacy function name for compatibility (if used elsewhere)
+    function showIsMutedButton(isMuted) {
+      // This is now handled by updateVolumeDisplay, but keeping for compatibility
+      updateVolumeDisplay();
     }
 
     // Init on load
@@ -1578,7 +1692,7 @@
       initScoreboard();
       initWorkoutModal();
       loadWorkout(currentWorkout); // Load default workout (Alfredson)
-      showIsMutedButton(isMuted);
+      updateVolumeDisplay(); // Initialize volume display
     }
 
     // Run initialization when DOM is ready
