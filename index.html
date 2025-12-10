@@ -808,6 +808,7 @@
     });
 
     let audioCtx;
+    let SOUND_VOLUME = 0.15; // Master volume control (0.0 to 1.0)
 
     // Helper function to play a single tone
     function playTone(frequency, duration, type = 'sine') {
@@ -827,7 +828,7 @@
       oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
 
       // Fade out to avoid clicking
-      gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
+      gainNode.gain.setValueAtTime(SOUND_VOLUME, audioCtx.currentTime);
       gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
 
       oscillator.start();
@@ -885,7 +886,7 @@
         oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // A5
 
         // Fade out to avoid clicking
-        gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gainNode.gain.setValueAtTime(SOUND_VOLUME, audioCtx.currentTime);
         gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.1);
 
         oscillator.start();
