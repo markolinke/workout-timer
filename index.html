@@ -801,6 +801,7 @@
     let pausedTimeTotal = 0;           // total seconds spent paused
     let lastPauseStart = null;        // when current pause began
     let getReadyActive = false;
+    let lastDingSecond = null;        // track which second we last played a ding (to avoid multiple plays per second)
 
     // Simple calf drop visual bar
     const calfBar = document.getElementById('calfBar');
@@ -946,6 +947,12 @@
       });
     }
 
+    // 5. Last Rep Ding Sound - Distinctive ding for last 3 seconds of last rep in round
+    function playDingSound() {
+      if (SOUND_VOLUME === 0) return;
+      playTone(900, 0.15); // Distinctive ding tone
+    }
+
     // Legacy function for backward compatibility (used for phase transitions)
     function playBeep(times = 1, delay = 200) {
       if (SOUND_VOLUME === 0) return;
@@ -1059,6 +1066,16 @@
         timerDisplay.style.color = ''; // Inherit from body
       }
 
+      // LAST REP DING LOGIC - Play ding once per second during last 3 seconds of last rep in round
+      const repsPerRound = parseInt(document.getElementById('reps').value);
+      if (currentRep === repsPerRound && isWorking && totalSeconds <= 3 && totalSeconds > 0) {
+        const currentSecond = Math.ceil(totalSeconds);
+        if (currentSecond !== lastDingSecond) {
+          playDingSound();
+          lastDingSecond = currentSecond;
+        }
+      }
+
       if (totalSeconds <= 0) {
         nextPhase();
       }
@@ -1112,6 +1129,9 @@
       updateProgress();
       updateDisplay();
       updateVisualBars();
+
+      // Reset ding tracking when phase changes
+      lastDingSecond = null;
 
       // Force correct background immediately when phase changes
       document.body.style.background =
@@ -1208,6 +1228,7 @@
       workoutStartedAt = null;
       pausedTimeTotal = 0;
       lastPauseStart = null;
+      lastDingSecond = null;
       calfBarContainer.style.display = 'none';
       if (calfBar) calfBar.style.removeProperty('display'); // Ensure inner bar is visible if it was hidden
       initScoreboard(); // Re-initialize scoreboard on reset
