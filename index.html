@@ -802,6 +802,7 @@
     let lastPauseStart = null;        // when current pause began
     let getReadyActive = false;
     let lastDingSecond = null;        // track which second we last played a ding (to avoid multiple plays per second)
+    let lastRoundRestDingSecond = null; // track which second we last played a round rest ding
 
     // Simple calf drop visual bar
     const calfBar = document.getElementById('calfBar');
@@ -947,10 +948,16 @@
       });
     }
 
-    // 5. Last Rep Ding Sound - Distinctive ding for last 3 seconds of last rep in round
+    // 5. Last Rep Ding Sound - Lower, mellow tone for last 3 seconds of last rep in round (ending/winding down)
     function playDingSound() {
       if (SOUND_VOLUME === 0) return;
-      playTone(900, 0.15); // Distinctive ding tone
+      playTone(700, 0.18); // Lower, mellow tone suggesting completion/ending
+    }
+
+    // 6. Round Rest Get Ready Sound - Higher, energetic tone for last 3 seconds of rest between rounds (preparation/alert)
+    function playGetReadySound() {
+      if (SOUND_VOLUME === 0) return;
+      playTone(1100, 0.12); // Higher, sharper tone suggesting preparation/get ready
     }
 
     // Legacy function for backward compatibility (used for phase transitions)
@@ -1076,6 +1083,15 @@
         }
       }
 
+      // ROUND REST GET READY LOGIC - Play get ready sound once per second during last 3 seconds of rest between rounds
+      if (isRoundRest && totalSeconds <= 3 && totalSeconds > 0) {
+        const currentSecond = Math.ceil(totalSeconds);
+        if (currentSecond !== lastRoundRestDingSecond) {
+          playGetReadySound();
+          lastRoundRestDingSecond = currentSecond;
+        }
+      }
+
       if (totalSeconds <= 0) {
         nextPhase();
       }
@@ -1132,6 +1148,7 @@
 
       // Reset ding tracking when phase changes
       lastDingSecond = null;
+      lastRoundRestDingSecond = null;
 
       // Force correct background immediately when phase changes
       document.body.style.background =
@@ -1229,6 +1246,7 @@
       pausedTimeTotal = 0;
       lastPauseStart = null;
       lastDingSecond = null;
+      lastRoundRestDingSecond = null;
       calfBarContainer.style.display = 'none';
       if (calfBar) calfBar.style.removeProperty('display'); // Ensure inner bar is visible if it was hidden
       initScoreboard(); // Re-initialize scoreboard on reset
