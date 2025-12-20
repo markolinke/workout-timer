@@ -948,16 +948,34 @@
       });
     }
 
-    // 5. Last Rep Ding Sound - Lower, mellow tone for last 3 seconds of last rep in round (ending/winding down)
-    function playDingSound() {
+    // 5. Last Rep Ding Sound - Progressively lowers pitch: G -> F -> C (ending/winding down)
+    // currentSecond: 3 (G) -> 2 (F) -> 1 (C)
+    function playDingSound(currentSecond) {
       if (SOUND_VOLUME === 0) return;
-      playTone(700, 0.18); // Lower, mellow tone suggesting completion/ending
+      let frequency;
+      if (currentSecond === 3) {
+        frequency = 392.00; // G4 at 3 seconds
+      } else if (currentSecond === 2) {
+        frequency = 349.23; // F4 at 2 seconds
+      } else {
+        frequency = 261.63; // C4 at 1 second
+      }
+      playTone(frequency, 0.18);
     }
 
-    // 6. Round Rest Get Ready Sound - Higher, energetic tone for last 3 seconds of rest between rounds (preparation/alert)
-    function playGetReadySound() {
+    // 6. Round Rest Get Ready Sound - Progressively raises pitch: C -> F -> G (preparation/alert)
+    // currentSecond: 3 (C) -> 2 (F) -> 1 (G)
+    function playGetReadySound(currentSecond) {
       if (SOUND_VOLUME === 0) return;
-      playTone(1100, 0.12); // Higher, sharper tone suggesting preparation/get ready
+      let frequency;
+      if (currentSecond === 3) {
+        frequency = 261.63; // C4 at 3 seconds
+      } else if (currentSecond === 2) {
+        frequency = 349.23; // F4 at 2 seconds
+      } else {
+        frequency = 392.00; // G4 at 1 second
+      }
+      playTone(frequency, 0.12);
     }
 
     // Legacy function for backward compatibility (used for phase transitions)
@@ -1074,20 +1092,22 @@
       }
 
       // LAST REP DING LOGIC - Play ding once per second during last 3 seconds of last rep in round
+      // Pitch progressively lowers: 3s (high) -> 2s (medium) -> 1s (low)
       const repsPerRound = parseInt(document.getElementById('reps').value);
       if (currentRep === repsPerRound && isWorking && totalSeconds <= 3 && totalSeconds > 0) {
         const currentSecond = Math.ceil(totalSeconds);
         if (currentSecond !== lastDingSecond) {
-          playDingSound();
+          playDingSound(currentSecond);
           lastDingSecond = currentSecond;
         }
       }
 
       // ROUND REST GET READY LOGIC - Play get ready sound once per second during last 3 seconds of rest between rounds
+      // Pitch progressively raises: 3s (low) -> 2s (medium) -> 1s (high)
       if (isRoundRest && totalSeconds <= 3 && totalSeconds > 0) {
         const currentSecond = Math.ceil(totalSeconds);
         if (currentSecond !== lastRoundRestDingSecond) {
-          playGetReadySound();
+          playGetReadySound(currentSecond);
           lastRoundRestDingSecond = currentSecond;
         }
       }
