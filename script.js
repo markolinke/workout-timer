@@ -10,25 +10,6 @@ function calculateTotalWorkoutTime(rounds, repsPerRound, workSec, restSec, round
 
     const timePerFullRound = repsPerRound * workSec + repsPerRound * restSec + roundRestSec;
     const lastRoundTime = repsPerRound * workSec + repsPerRound * restSec;
-    // Note: The last round technically ends with a rest period now before the workout finishes?
-    // The user said: "After EVERY rep, do a rest after rep."
-    // "WORK-REST-WORK-REST-REST BETWEEN ROUNDS-WORK-REST-WORK-REST."
-    // This implies the last rep of the last round also has a rest.
-    // However, usually the last thing is "DONE".
-    // Let's look at the example: "WORK-REST-WORK-REST-REST BETWEEN ROUNDS-WORK-REST-WORK-REST."
-    // It ends with REST. So yes, the last round also has the full set of rests.
-    // But wait, usually you don't rest after the very last rep of the workout, you just finish.
-    // The user example: "WORK-REST-WORK-REST-REST BETWEEN ROUNDS-WORK-REST-WORK-REST."
-    // It ends with REST.
-    // So I will include it.
-
-    // Actually, let's stick to the formula:
-    // timePerFullRound = reps * (work + rest) + roundRest
-    // lastRoundTime = reps * (work + rest)
-    // But wait, if there is a round rest, it's usually between rounds.
-    // The user example shows: WORK-REST-WORK-REST - REST BETWEEN ROUNDS - ...
-    // So the sequence for a round is: (WORK, REST) * reps + ROUND_REST
-    // For the last round: (WORK, REST) * reps.
 
     return (rounds - 1) * timePerFullRound + lastRoundTime;
 }
