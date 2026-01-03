@@ -1220,6 +1220,7 @@
     }
 
     function pauseTimer() {
+      clearInterval(countdown);
       isPaused = true;
       updateMainButtonState();
 
@@ -1243,6 +1244,7 @@
 
 
     function resetTimer() {
+      clearInterval(countdown);
       totalSeconds = 0;
       currentRound = 1;
       currentRep = 1;
@@ -1252,6 +1254,7 @@
       isPaused = false;
 
       updateMainButtonState();
+
 
       updateDisplay();
       progressDisplay.textContent = '';
@@ -1274,6 +1277,7 @@
 
     function finishWorkout() {
       console.log('finishWorkout');
+      clearInterval(countdown);
       isRunning = false;
       isPaused = false;
       releaseWakeLock();           // ← definitely release when workout ends
@@ -1281,7 +1285,6 @@
       timerDisplay.textContent = "DONE!";
       progressDisplay.textContent = '';
       updateMainButtonState();
-      resetTimer();
 
       playWorkoutEndSound(); // Workout end sound
       document.body.style.background = '#1b5e20';
