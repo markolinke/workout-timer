@@ -38,6 +38,7 @@ Enforce **clean architecture**: strict separation between layers (controllers/ha
 - **Do not** write long summaries, architecture essays, or approval/blocking verdicts unless the change is dangerously broken.
 - **Do not** auto-approve silently — if nothing worth commenting, say so briefly.
 - Flag when a PR mixes concerns (refactor + feature + style + bugfix) — suggest splitting.
+- **Prefix every comment** with "[AI Review]", for example "[AI Review] this code should be simplified"
 - Prefer suggesting **simpler alternatives** over just saying "bad".
 - When choosing where to attach a `gh` line comment, use the **line number in the new version of the file** (not the raw diff line number) so the comment points at the correct code.
 
