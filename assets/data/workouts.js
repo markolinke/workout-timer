@@ -22,6 +22,17 @@ const PREDEFINED_WORKOUTS = [
       }
     },
     {
+      id: 'mc-gill-big-3',
+      name: 'McGill Big 3 (3-2-1, 10sec each)',
+      config: {
+        rounds: 6,
+        reps: 3,
+        work: 10,
+        rest: 5,
+        roundRest: 15
+      }
+    },
+    {
       id: 'calf-3x8',
       name: 'Calf Raise 3x8',
       config: {
